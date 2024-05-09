@@ -1,0 +1,37 @@
+/*
+ * Jealno - an OpenGL 3D game.
+ * Copyright (C) 2024 Vadim Nikolaev (https://github.com/vadniks).
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+#pragma once
+
+#include <QOpenGLFunctions_3_3_Core>
+#include <glm/glm.hpp>
+
+class Texture2d final : private QOpenGLFunctions_3_3_Core {
+private:
+    unsigned mId;
+    glm::vec2 mSize;
+public:
+    Texture2d(const glm::vec2& size, const unsigned char* data);
+    Texture2d(const Texture2d&) = delete;
+
+    ~Texture2d() override;
+
+    Texture2d& operator =(const Texture2d&) = delete;
+
+    void bind();
+};
