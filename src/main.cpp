@@ -23,11 +23,31 @@
 #include <SDL2/SDL_ttf.h>
 #include <GL/glew.h>
 
+static int gWidth = 0, gHeight = 0;
+
+static float normalize(int coordinate, int axis) {
+    return 2.0f * (static_cast<float>(coordinate) + 0.5f) / static_cast<float>(axis) - 1.0f;
+}
+
+static float normalizeX(int coordinate) {
+    return normalize(coordinate, gWidth);
+}
+
+static float normalizeY(int coordinate) {
+    return normalize(coordinate, gHeight);
+}
+
 static void render() {
+//    float vertices[] = {
+//        -0.5f, -0.5f, 0.0f,
+//        0.5f, -0.5f, 0.0f,
+//        0.0f, 0.5f, 0.0f
+//    };
+
     float vertices[] = {
-        -0.5f, -0.5f, 0.0f,
-        0.5f, -0.5f, 0.0f,
-        0.0f, 0.5f, 0.0f
+        normalizeX(250), normalizeY(250), 0.0f,
+        normalizeX(750), normalizeY(250), 0.0f,
+        normalizeX(500), normalizeY(750), 0.0f
     };
 
     unsigned vbo;
@@ -113,8 +133,8 @@ int main() {
         "Jealno",
         SDL_WINDOWPOS_CENTERED,
         SDL_WINDOWPOS_CENTERED,
-        16 * 50,
-        9 * 50,
+        (gWidth = 1000),
+        (gHeight = 1000),
         SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN
     );
     assert(window != nullptr);
