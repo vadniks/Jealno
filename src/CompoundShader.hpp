@@ -18,14 +18,13 @@
 
 #pragma once
 
-#include "GLWidget.hpp"
-#include <QMainWindow>
-
-class MainWindow : public QMainWindow {
-    Q_OBJECT
-private:
-    GLWidget* mGLWidget;
+class CompoundShader {
 public:
-    MainWindow();
-    ~MainWindow() override;
+    CompoundShader();
+    CompoundShader(const CompoundShader&) = delete;
+
+    ~CompoundShader();
+
+    CompoundShader& operator =(const CompoundShader&) = delete;
+
 };

@@ -25,8 +25,11 @@ class GLWidget : public QOpenGLWidget, protected QOpenGLFunctions {
     Q_OBJECT
 public:
     explicit GLWidget(QWidget* parent = nullptr);
+    GLWidget(const GLWidget&) = delete;
+
     ~GLWidget() override;
 
+    GLWidget& operator =(const GLWidget&) = delete;
     [[nodiscard]] QSize minimumSizeHint() const override;
     [[nodiscard]] QSize sizeHint() const override;
 protected:

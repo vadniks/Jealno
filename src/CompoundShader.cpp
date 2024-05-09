@@ -16,16 +16,4 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#pragma once
-
-#include "GLWidget.hpp"
-#include <QMainWindow>
-
-class MainWindow : public QMainWindow {
-    Q_OBJECT
-private:
-    GLWidget* mGLWidget;
-public:
-    MainWindow();
-    ~MainWindow() override;
-};
+#include "CompoundShader.hpp"
