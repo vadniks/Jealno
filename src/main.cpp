@@ -38,17 +38,17 @@ static float normalizeY(int coordinate) {
 }
 
 static void render() {
-//    float vertices[] = {
-//        -0.5f, -0.5f, 0.0f,
-//        0.5f, -0.5f, 0.0f,
-//        0.0f, 0.5f, 0.0f
-//    };
-
     float vertices[] = {
-        normalizeX(250), normalizeY(250), 0.0f,
-        normalizeX(750), normalizeY(250), 0.0f,
-        normalizeX(500), normalizeY(750), 0.0f
+        -0.5f, -0.5f, 0.0f,
+        0.5f, -0.5f, 0.0f,
+        0.0f, 0.5f, 0.0f
     };
+
+//    float vertices[] = {
+//        normalizeX(250), normalizeY(250), 0.0f,
+//        normalizeX(750), normalizeY(250), 0.0f,
+//        normalizeX(500), normalizeY(750), 0.0f
+//    };
 
     unsigned vbo;
     glGenBuffers(1, &vbo);
@@ -78,7 +78,7 @@ static void render() {
             out vec4 color;
 
             void main() {
-                color = vec4(0.5, 0.5, 0.5, 1.0);
+                color = vec4(0.5, 0.1, 0.1, 1.0);
             }
         )"
     );
