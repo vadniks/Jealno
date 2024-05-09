@@ -18,8 +18,8 @@
 
 #include "GLWidget.hpp"
 
-GLWidget::GLWidget(QWidget* parent) {
-
+GLWidget::GLWidget(QWidget* parent) : QOpenGLWidget(parent) {
+    setFormat(QSurfaceFormat::defaultFormat());
 }
 
 GLWidget::~GLWidget() {
