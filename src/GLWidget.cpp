@@ -38,6 +38,7 @@ QSize GLWidget::sizeHint() const {
 void GLWidget::initializeGL() {
     initializeOpenGLFunctions();
 
+    glEnable(GL_TEXTURE_2D);
     glEnable(GL_MULTISAMPLE);
     glEnable(GL_BLEND);
     glEnable(GL_DEPTH_TEST);
