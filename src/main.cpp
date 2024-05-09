@@ -16,6 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include "CompoundShader.hpp"
 #include <cassert>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
@@ -23,7 +24,51 @@
 #include <GL/glew.h>
 
 static void render() {
+    float vertices[] = {
+        -0.5f, -0.5f, 0.0f,
+        0.5f, -0.5f, 0.0f,
+        0.0f, 0.5f, 0.0f
+    };
 
+    unsigned vbo;
+    glGenBuffers(1, &vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    unsigned vao;
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), reinterpret_cast<void*>(0));
+    glEnableVertexAttribArray(0);
+
+    CompoundShader shader(
+        R"(
+            #version 330 core
+
+            layout (location = 0) in vec3 pos;
+
+            void main() {
+                gl_Position = vec4(pos, 1.0);
+            }
+        )",
+        R"(
+            #version 330 core
+
+            out vec4 color;
+
+            void main() {
+                color = vec4(0.5, 0.5, 0.5, 1.0);
+            }
+        )"
+    );
+
+    shader.use();
+
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+
+    glDeleteVertexArrays(1, &vao);
+    glDeleteBuffers(1, &vbo);
 }
 
 static void renderLoop(SDL_Window* window) {
