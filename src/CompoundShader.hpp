@@ -19,17 +19,17 @@
 #pragma once
 
 #include <string>
+#include <GL/glew.h>
 #include <glm/glm.hpp>
-#include <QOpenGLFunctions_3_3_Core>
 
-class CompoundShader final : private QOpenGLFunctions_3_3_Core {
+class CompoundShader final {
 private:
     unsigned mProgramId;
 public:
     CompoundShader(const std::string& vertexSource, const std::string& fragmentSource);
     CompoundShader(const CompoundShader&) = delete;
 
-    ~CompoundShader() override;
+    ~CompoundShader();
 
     CompoundShader& operator =(const CompoundShader&) = delete;
 

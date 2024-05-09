@@ -17,13 +17,9 @@
  */
 
 #include "Texture2d.hpp"
+#include <GL/glew.h>
 
-Texture2d::Texture2d(const glm::vec2& size, const unsigned char* data) {
-    mSize = size;
-    mId = 0;
-
-    QOpenGLFunctions_3_3_Core::initializeOpenGLFunctions();
-
+Texture2d::Texture2d(const glm::vec2& size, const unsigned char* data) : mId(0), mSize(size) {
     glGenTextures(1, &mId);
     glBindTexture(GL_TEXTURE_2D, mId);
     glTexImage2D(

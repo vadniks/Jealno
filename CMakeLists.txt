@@ -3,13 +3,16 @@ cmake_minimum_required(VERSION 3.26)
 project(Jealno)
 
 set(CMAKE_CXX_STANDARD 23)
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTORCC ON)
-set(CMAKE_AUTOUIC ON)
 
-find_package(Qt6 COMPONENTS Core Gui Widgets OpenGL OpenGLWidgets REQUIRED)
+add_compile_options("-Wall")
+add_compile_options("-Wextra")
+add_compile_options("-Wpedantic")
+add_compile_options("-O3")
+#add_link_options("-s")
 
 file(GLOB PROJECT_SOURCES CONFIGURE_DEPENDS src/*.cpp src/*.hpp)
 add_executable(${PROJECT_NAME} ${PROJECT_SOURCES})
 
-target_link_libraries(${PROJECT_NAME} Qt::Core Qt::Gui Qt::Widgets Qt6::OpenGL Qt6::OpenGLWidgets glm)
+target_link_libraries(${PROJECT_NAME} SDL2 SDL2_ttf SDL2_image GL GLEW)
+
+file(COPY res DESTINATION ${CMAKE_BINARY_DIR})

@@ -18,10 +18,9 @@
 
 #pragma once
 
-#include <QOpenGLFunctions_3_3_Core>
 #include <glm/glm.hpp>
 
-class Texture2d final : private QOpenGLFunctions_3_3_Core {
+class Texture2d final {
 private:
     unsigned mId;
     glm::vec2 mSize;
@@ -29,7 +28,7 @@ public:
     Texture2d(const glm::vec2& size, const unsigned char* data);
     Texture2d(const Texture2d&) = delete;
 
-    ~Texture2d() override;
+    ~Texture2d();
 
     Texture2d& operator =(const Texture2d&) = delete;
 

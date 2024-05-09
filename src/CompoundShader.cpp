@@ -17,11 +17,10 @@
  */
 
 #include "CompoundShader.hpp"
+#include <GL/glew.h>
 #include <glm/gtc/type_ptr.hpp>
 
 CompoundShader::CompoundShader(const std::string& vertexCode, const std::string& fragmentCode) {
-    QOpenGLFunctions_3_3_Core::initializeOpenGLFunctions();
-
     int success;
     unsigned vertex = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertex, 1, (const char*[1]) {vertexCode.c_str()}, nullptr);
