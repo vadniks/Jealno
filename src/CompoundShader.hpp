@@ -18,13 +18,28 @@
 
 #pragma once
 
-class CompoundShader {
+#include <string>
+#include <glm/glm.hpp>
+#include <QOpenGLFunctions_3_3_Core>
+
+class CompoundShader final : private QOpenGLFunctions_3_3_Core {
+private:
+    unsigned mProgramId;
 public:
-    CompoundShader();
+    CompoundShader(const std::string& vertexSource, const std::string& fragmentSource);
     CompoundShader(const CompoundShader&) = delete;
 
-    ~CompoundShader();
+    ~CompoundShader() override;
 
     CompoundShader& operator =(const CompoundShader&) = delete;
 
+    void use();
+    void setValue(const std::string& name, bool value);
+    void setValue(const std::string& name, float value);
+    void setValue(const std::string& name, int value);
+    void setValue(const std::string& name, const glm::vec2& value);
+    void setValue(const std::string& name, const glm::vec3& value);
+    void setValue(const std::string& name, const glm::vec4& value);
+    void setValue(const std::string& name, const glm::mat3& value);
+    void setValue(const std::string& name, const glm::mat4& value);
 };

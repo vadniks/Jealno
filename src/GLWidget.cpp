@@ -17,6 +17,7 @@
  */
 
 #include "GLWidget.hpp"
+#include <GL/gl.h>
 
 GLWidget::GLWidget(QWidget* parent) : QOpenGLWidget(parent) {
     setFormat(QSurfaceFormat::defaultFormat());

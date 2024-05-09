@@ -19,9 +19,9 @@
 #pragma once
 
 #include <QOpenGLWidget>
-#include <QOpenGLFunctions>
+#include <QOpenGLFunctions_3_3_Core>
 
-class GLWidget : public QOpenGLWidget, protected QOpenGLFunctions {
+class GLWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
     Q_OBJECT
 public:
     explicit GLWidget(QWidget* parent = nullptr);
@@ -30,6 +30,7 @@ public:
     ~GLWidget() override;
 
     GLWidget& operator =(const GLWidget&) = delete;
+
     [[nodiscard]] QSize minimumSizeHint() const override;
     [[nodiscard]] QSize sizeHint() const override;
 protected:
