@@ -182,6 +182,7 @@ static void render() {
 static void renderLoop(SDL_Window* window) {
     int width, height;
     SDL_Event event;
+    bool mousePressed;
 
     while (true) {
         SDL_GL_GetDrawableSize(window, &width, &height);
@@ -215,8 +216,15 @@ static void renderLoop(SDL_Window* window) {
                     }
                     gCamera.processKeyboard(direction);
                     break;
+                case SDL_MOUSEBUTTONDOWN:
+                    mousePressed = true;
+                    break;
+                case SDL_MOUSEBUTTONUP:
+                    mousePressed = false;
+                    break;
                 case SDL_MOUSEMOTION:
-                    gCamera.processMouseMovement(static_cast<float>(event.motion.xrel), static_cast<float>(event.motion.yrel));
+                    if (mousePressed)
+                        gCamera.processMouseMovement(static_cast<float>(event.motion.xrel), static_cast<float>(event.motion.yrel));
                     break;
                 case SDL_MOUSEWHEEL:
                     gCamera.processMouseScroll(static_cast<float>(event.wheel.y));
