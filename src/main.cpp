@@ -73,6 +73,7 @@ static void render() {
     SDL_Surface* surface = IMG_Load("res/wall.png");
     unsigned texture;
     glGenTextures(1, &texture);
+    glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, texture);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -116,6 +117,7 @@ static void render() {
     );
 
     shader.use();
+    shader.setValue("aTexture", 0);
 
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, reinterpret_cast<void*>(0));
 
