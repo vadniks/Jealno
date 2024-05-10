@@ -17,6 +17,7 @@
  */
 
 #include "CompoundShader.hpp"
+#include "Camera.hpp"
 #include <cassert>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
@@ -27,6 +28,7 @@
 #include <glm/ext/matrix_clip_space.hpp>
 
 static int gWidth = 0, gHeight = 0;
+static Camera gCamera(glm::vec3(0.0f, 0.0f, 3.0f));
 
 static float normalize(int coordinate, int axis) {
     return 2.0f * (static_cast<float>(coordinate) + 0.5f) / static_cast<float>(axis) - 1.0f;
@@ -107,10 +109,9 @@ static void render() {
     SDL_FreeSurface(surface);
     glGenerateMipmap(GL_TEXTURE_2D);
 
-    auto view = glm::mat4(1.0f);
-    view = glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    auto view = gCamera.viewMatrix();
 
-    glm::mat4 projection = glm::perspective(glm::radians(45.0f), static_cast<float>(gWidth) / static_cast<float>(gHeight), 0.1f, 100.0f);
+    glm::mat4 projection = glm::perspective(glm::radians(gCamera.zoom()), static_cast<float>(gWidth) / static_cast<float>(gHeight), 0.1f, 100.0f);
 
     CompoundShader shader(
         R"(
@@ -190,6 +191,36 @@ static void renderLoop(SDL_Window* window) {
             switch (event.type) {
                 case SDL_QUIT:
                     return;
+                case SDL_KEYDOWN:
+                    Camera::Direction direction;
+                    switch (event.key.keysym.sym) {
+                        case SDLK_w:
+                            direction = Camera::Direction::FORWARD;
+                            break;
+                        case SDLK_a:
+                            direction = Camera::Direction::LEFT;
+                            break;
+                        case SDLK_s:
+                            direction = Camera::Direction::BACKWARD;
+                            break;
+                        case SDLK_d:
+                            direction = Camera::Direction::RIGHT;
+                            break;
+                        case SDLK_SPACE:
+                            direction = Camera::Direction::UP;
+                            break;
+                        case SDLK_LSHIFT:
+                            direction = Camera::Direction::DOWN;
+                            break;
+                    }
+                    gCamera.processKeyboard(direction);
+                    break;
+                case SDL_MOUSEMOTION:
+                    gCamera.processMouseMovement(static_cast<float>(event.motion.xrel), static_cast<float>(event.motion.yrel));
+                    break;
+                case SDL_MOUSEWHEEL:
+                    gCamera.processMouseScroll(static_cast<float>(event.wheel.y));
+                    break;
             }
         }
 
