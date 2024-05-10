@@ -24,6 +24,7 @@
 #include <GL/glew.h>
 #include <glm/glm.hpp>
 #include <glm/ext/matrix_transform.hpp>
+#include <glm/ext/matrix_clip_space.hpp>
 
 static int gWidth = 0, gHeight = 0;
 
@@ -85,10 +86,13 @@ static void render() {
     SDL_FreeSurface(surface);
     glGenerateMipmap(GL_TEXTURE_2D);
 
-    auto transform = glm::mat4(1.0f);
-    transform = glm::translate(transform, glm::vec3(0.5f, -0.5f, 0.0f));
-    transform = glm::rotate(transform, glm::radians(45.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    transform = glm::scale(transform, glm::vec3(0.5, 0.5, 0.5));
+    auto model = glm::mat4(1.0f);
+    model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+
+    auto view = glm::mat4(1.0f);
+    view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+
+    glm::mat4 projection = glm::perspective(glm::radians(45.0f), static_cast<float>(gWidth) / static_cast<float>(gHeight), 0.1f, 100.0f);
 
     CompoundShader shader(
         R"(
@@ -101,10 +105,12 @@ static void render() {
             out vec3 bColor;
             out vec2 bTexCoord;
 
-            uniform mat4 aTransform;
+            uniform mat4 model;
+            uniform mat4 view;
+            uniform mat4 projection;
 
             void main() {
-                gl_Position = aTransform * vec4(aPosition, 1.0);
+                gl_Position = projection * view * model * vec4(aPosition, 1.0);
                 bColor = aColor;
                 bTexCoord = aTexCoord;
             }
@@ -127,7 +133,9 @@ static void render() {
 
     shader.use();
     shader.setValue("aTexture", 0);
-    shader.setValue("aTransform", transform);
+    shader.setValue("model", model);
+    shader.setValue("view", view);
+    shader.setValue("projection", projection);
 
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, reinterpret_cast<void*>(0));
 
