@@ -22,6 +22,8 @@
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
 #include <GL/glew.h>
+#include <glm/glm.hpp>
+#include <glm/ext/matrix_transform.hpp>
 
 static int gWidth = 0, gHeight = 0;
 
@@ -83,6 +85,10 @@ static void render() {
     SDL_FreeSurface(surface);
     glGenerateMipmap(GL_TEXTURE_2D);
 
+    auto transform = glm::mat4(1.0f);
+    transform = glm::rotate(transform, glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    transform = glm::scale(transform, glm::vec3(0.5, 0.5, 0.5));
+
     CompoundShader shader(
         R"(
             #version 330 core
@@ -94,8 +100,10 @@ static void render() {
             out vec3 bColor;
             out vec2 bTexCoord;
 
+            uniform mat4 aTransform;
+
             void main() {
-                gl_Position = vec4(aPosition, 1.0);
+                gl_Position = aTransform * vec4(aPosition, 1.0);
                 bColor = aColor;
                 bTexCoord = aTexCoord;
             }
@@ -118,6 +126,7 @@ static void render() {
 
     shader.use();
     shader.setValue("aTexture", 0);
+    shader.setValue("aTransform", transform);
 
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, reinterpret_cast<void*>(0));
 
