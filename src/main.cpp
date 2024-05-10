@@ -107,10 +107,6 @@ static void render() {
     SDL_FreeSurface(surface);
     glGenerateMipmap(GL_TEXTURE_2D);
 
-    auto model = glm::mat4(1.0f);
-    model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    model = glm::rotate(model, static_cast<float>(SDL_GetTicks()) / 1000.0f * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
-
     auto view = glm::mat4(1.0f);
     view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
 
@@ -151,11 +147,31 @@ static void render() {
 
     shader.use();
     shader.setValue("aTexture", 0);
-    shader.setValue("model", model);
     shader.setValue("view", view);
     shader.setValue("projection", projection);
 
-    glDrawArrays(GL_TRIANGLES, 0, 36);
+    glm::vec3 cubePositions[] = {
+        glm::vec3( 0.0f, 0.0f, 0.0f),
+        glm::vec3( 2.0f, 5.0f, -15.0f),
+        glm::vec3(-1.5f, -2.2f, -2.5f),
+        glm::vec3(-3.8f, -2.0f, -12.3f),
+        glm::vec3( 2.4f, -0.4f, -3.5f),
+        glm::vec3(-1.7f, 3.0f, -7.5f),
+        glm::vec3( 1.3f, -2.0f, -2.5f),
+        glm::vec3( 1.5f, 2.0f, -2.5f),
+        glm::vec3( 1.5f, 0.2f, -1.5f),
+        glm::vec3(-1.3f, 1.0f, -1.5f)
+    };
+
+    for (int i = 0; i < 10; i++) {
+        auto model = glm::mat4(1.0f);
+        model = glm::translate(model, cubePositions[i]);
+        model = glm::rotate(model, glm::radians(static_cast<float>(i) * 180.0f), glm::vec3(1.0f, 0.3f, 0.5f));
+
+        shader.setValue("model", model);
+
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+    }
 
     glDeleteTextures(1, &texture);
     glDeleteVertexArrays(1, &vao);
