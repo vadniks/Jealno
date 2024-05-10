@@ -108,6 +108,7 @@ static void render() {
     glGenerateMipmap(GL_TEXTURE_2D);
 
     auto model = glm::mat4(1.0f);
+    model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     model = glm::rotate(model, static_cast<float>(SDL_GetTicks()) / 1000.0f * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
 
     auto view = glm::mat4(1.0f);
