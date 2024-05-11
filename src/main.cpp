@@ -275,7 +275,7 @@ static void renderLoop(SDL_Window* window) {
                         case SDLK_SPACE:
                             direction = Camera::Direction::UP;
                             break;
-                        case SDLK_LSHIFT:
+                        case SDLK_c:
                             direction = Camera::Direction::DOWN;
                             break;
                     }
