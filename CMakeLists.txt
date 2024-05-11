@@ -1,6 +1,6 @@
 
 cmake_minimum_required(VERSION 3.26)
-project(Jealno)
+project(Jealno LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 23)
 
