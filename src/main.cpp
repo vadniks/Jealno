@@ -112,9 +112,22 @@ static void render() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    SDL_Surface* surface = IMG_Load("res/container2.png");
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, surface->w, surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, surface->pixels);
-    SDL_FreeSurface(surface);
+    SDL_Surface* diffuseSurface = IMG_Load("res/container2.png");
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, diffuseSurface->w, diffuseSurface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, diffuseSurface->pixels);
+    SDL_FreeSurface(diffuseSurface);
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    unsigned specularTexture;
+    glGenTextures(1, &specularTexture);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, specularTexture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    SDL_Surface* specularSurface = IMG_Load("res/container2_specular.png");
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, specularSurface->w, specularSurface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, specularSurface->pixels);
+    SDL_FreeSurface(specularSurface);
     glGenerateMipmap(GL_TEXTURE_2D);
 
     CompoundShader objectShader(
@@ -145,7 +158,7 @@ static void render() {
 
             struct Material {
                 sampler2D diffuse;
-                vec3 specular;
+                sampler2D specular;
                 float shininess;
             };
 
@@ -177,7 +190,7 @@ static void render() {
                 vec3 viewDir = normalize(viewPos - FragPos);
                 vec3 reflectDir = reflect(-lightDir, norm);
                 float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
-                vec3 specular = light.specular * (spec * material.specular);
+                vec3 specular = light.specular * spec * vec3(texture(material.specular, TexCoords));
 
                 vec3 result = ambient + diffuse + specular;
                 FragColor = vec4(result, 1.0);
@@ -187,8 +200,8 @@ static void render() {
 
     objectShader.use();
     objectShader.setValue("material.diffuse", 0);
+    objectShader.setValue("material.specular", 1);
     objectShader.setValue("viewPos", gCamera.position());
-    objectShader.setValue("material.specular", glm::vec3(0.5f, 0.5f, 0.5f));
     objectShader.setValue("material.shininess", 32.0f);
     objectShader.setValue("light.position", lightPosition);
     objectShader.setValue("light.ambient", glm::vec3(0.2f, 0.2f, 0.2f));
@@ -250,9 +263,12 @@ static void render() {
     //
 
     glDeleteTextures(1, &diffuseTexture);
+    glDeleteTextures(1, &specularTexture);
     glDeleteVertexArrays(1, &objectVao);
     glDeleteVertexArrays(1, &lightVao);
     glDeleteBuffers(1, &vbo);
+
+    SDL_Delay(1000 / 60);
 }
 
 static void renderLoop(SDL_Window* window) {
