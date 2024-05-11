@@ -122,7 +122,8 @@ static void render() {
             uniform vec3 lightColor;
 
             void main() {
-                color = vec4(lightColor * objectColor, 1.0);
+                vec3 ambient = 0.1 * lightColor;
+                color = vec4(ambient * objectColor, 1.0);
             }
         )"
     );
