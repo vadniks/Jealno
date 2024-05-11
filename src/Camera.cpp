@@ -96,3 +96,7 @@ void Camera::updateCameraVectors() {
 float Camera::zoom() {
     return mZoom;
 }
+
+glm::vec3 Camera::position() {
+    return mPosition;
+}

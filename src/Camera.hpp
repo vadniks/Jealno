@@ -47,6 +47,7 @@ public:
     void processMouseMovement(float xOffset, float yOffset);
     void processMouseScroll(float yOffset);
     float zoom();
+    glm::vec3 position();
 private:
     void updateCameraVectors();
 };

@@ -136,17 +136,22 @@ static void render() {
             uniform vec3 objectColor;
             uniform vec3 lightColor;
             uniform vec3 lightPosition;
+            uniform vec3 viewPosition;
 
             void main() {
                 vec3 norm = normalize(normal);
                 vec3 lightDirection = normalize(lightPosition - fragmentPosition);
-
                 float diff = max(dot(norm, lightDirection), 0.0);
                 vec3 diffuse = diff * lightColor;
 
+                vec3 viewDirection = normalize(viewPosition - fragmentPosition);
+                vec3 reflectDirection = reflect(-lightDirection, norm);
+                float spec = pow(max(dot(viewDirection, reflectDirection), 0.0), 32);
+                vec3 specular = 0.5 * spec * lightColor;
+
                 vec3 ambient = 0.1 * lightColor;
 
-                color = vec4((ambient + diffuse) * objectColor, 1.0);
+                color = vec4((ambient + diffuse + specular) * objectColor, 1.0);
             }
         )"
     );
@@ -155,6 +160,7 @@ static void render() {
     objectShader.setValue("objectColor", glm::vec3(1.0f, 0.5f, 0.31f));
     objectShader.setValue("lightColor", glm::vec3(1.0f, 1.0f, 1.0f));
     objectShader.setValue("lightPosition", lightPosition);
+    objectShader.setValue("viewPosition", gCamera.position());
     objectShader.setValue("view", view);
     objectShader.setValue("projection", projection);
     objectShader.setValue("model", objectModel);
