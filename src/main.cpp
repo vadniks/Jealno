@@ -104,16 +104,30 @@ static void render() {
 
     auto objectModel = glm::mat4(1.0f);
 
+    unsigned diffuseTexture;
+    glGenTextures(1, &diffuseTexture);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, diffuseTexture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    SDL_Surface* surface = IMG_Load("res/container2.png");
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, surface->w, surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, surface->pixels);
+    SDL_FreeSurface(surface);
+    glGenerateMipmap(GL_TEXTURE_2D);
+
     CompoundShader objectShader(
         R"(
             #version 330 core
 
             layout (location = 0) in vec3 aPos;
             layout (location = 1) in vec3 aNormal;
-            layout (location = 2) in vec2 aTex;
+            layout (location = 2) in vec2 aTexCoords;
 
             out vec3 FragPos;
             out vec3 Normal;
+            out vec2 TexCoords;
 
             uniform mat4 model;
             uniform mat4 view;
@@ -122,6 +136,7 @@ static void render() {
             void main() {
                 FragPos = vec3(model * vec4(aPos, 1.0));
                 Normal = mat3(transpose(inverse(model))) * aNormal;
+                TexCoords = aTexCoords;
                 gl_Position = projection * view * model * vec4(aPos, 1.0);
             }
         )",
@@ -129,8 +144,7 @@ static void render() {
             #version 330 core
 
             struct Material {
-                vec3 ambient;
-                vec3 diffuse;
+                sampler2D diffuse;
                 vec3 specular;
                 float shininess;
             };
@@ -146,18 +160,19 @@ static void render() {
 
             in vec3 Normal;
             in vec3 FragPos;
+            in vec2 TexCoords;
 
             uniform vec3 viewPos;
             uniform Material material;
             uniform Light light;
 
             void main() {
-                vec3 ambient = light.ambient * material.ambient;
+                vec3 ambient = light.ambient * vec3(texture(material.diffuse, TexCoords));
 
                 vec3 norm = normalize(Normal);
                 vec3 lightDir = normalize(light.position - FragPos);
                 float diff = max(dot(norm, lightDir), 0.0);
-                vec3 diffuse = light.diffuse * (diff * material.diffuse);
+                vec3 diffuse = light.diffuse * diff * vec3(texture(material.diffuse, TexCoords));
 
                 vec3 viewDir = normalize(viewPos - FragPos);
                 vec3 reflectDir = reflect(-lightDir, norm);
@@ -171,9 +186,8 @@ static void render() {
     );
 
     objectShader.use();
+    objectShader.setValue("material.diffuse", 0);
     objectShader.setValue("viewPos", gCamera.position());
-    objectShader.setValue("material.ambient", glm::vec3(1.0f, 0.5f, 0.31f));
-    objectShader.setValue("material.diffuse", glm::vec3(1.0f, 0.5f, 0.31f));
     objectShader.setValue("material.specular", glm::vec3(0.5f, 0.5f, 0.5f));
     objectShader.setValue("material.shininess", 32.0f);
     objectShader.setValue("light.position", lightPosition);
@@ -235,6 +249,7 @@ static void render() {
 
     //
 
+    glDeleteTextures(1, &diffuseTexture);
     glDeleteVertexArrays(1, &objectVao);
     glDeleteVertexArrays(1, &lightVao);
     glDeleteBuffers(1, &vbo);
