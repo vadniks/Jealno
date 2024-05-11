@@ -127,11 +127,19 @@ static void render() {
         )",
         R"(
             #version 330 core
+
             struct Material {
                 vec3 ambient;
                 vec3 diffuse;
                 vec3 specular;
                 float shininess;
+            };
+
+            struct Light {
+                vec3 position;
+                vec3 ambient;
+                vec3 diffuse;
+                vec3 specular;
             };
 
             out vec4 FragColor;
@@ -141,22 +149,22 @@ static void render() {
 
             uniform vec3 objectColor;
             uniform vec3 lightColor;
-            uniform vec3 lightPos;
             uniform vec3 viewPos;
             uniform Material material;
+            uniform Light light;
 
             void main() {
-                vec3 ambient = lightColor * material.ambient;
+                vec3 ambient = light.ambient * material.ambient;
 
                 vec3 norm = normalize(Normal);
-                vec3 lightDir = normalize(lightPos - FragPos);
+                vec3 lightDir = normalize(light.position - FragPos);
                 float diff = max(dot(norm, lightDir), 0.0);
-                vec3 diffuse = lightColor * (diff * material.diffuse);
+                vec3 diffuse = light.diffuse * (diff * material.diffuse);
 
                 vec3 viewDir = normalize(viewPos - FragPos);
                 vec3 reflectDir = reflect(-lightDir, norm);
                 float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
-                vec3 specular = lightColor * (spec * material.specular);
+                vec3 specular = light.specular * (spec * material.specular);
 
                 vec3 result = ambient + diffuse + specular;
                 FragColor = vec4(result, 1.0);
@@ -167,12 +175,15 @@ static void render() {
     objectShader.use();
     objectShader.setValue("objectColor", glm::vec3(1.0f, 0.5f, 0.31f));
     objectShader.setValue("lightColor", glm::vec3(1.0f, 1.0f, 1.0f));
-    objectShader.setValue("lightPos", lightPosition);
     objectShader.setValue("viewPos", gCamera.position());
     objectShader.setValue("material.ambient", glm::vec3(1.0f, 0.5f, 0.31f));
     objectShader.setValue("material.diffuse", glm::vec3(1.0f, 0.5f, 0.31f));
     objectShader.setValue("material.specular", glm::vec3(0.5f, 0.5f, 0.5f));
     objectShader.setValue("material.shininess", 32.0f);
+    objectShader.setValue("light.position", lightPosition);
+    objectShader.setValue("light.ambient", glm::vec3(0.2f, 0.2f, 0.2f));
+    objectShader.setValue("light.diffuse", glm::vec3(0.5f, 0.5f, 0.5f)); // darkened
+    objectShader.setValue("light.specular", glm::vec3(1.0f, 1.0f, 1.0f));
     objectShader.setValue("model", objectModel);
     objectShader.setValue("view", view);
     objectShader.setValue("projection", projection);
