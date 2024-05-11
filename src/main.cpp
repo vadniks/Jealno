@@ -82,9 +82,9 @@ static void render() {
         -0.5f, 0.5f, -0.5f,
     };
 
-    unsigned vao;
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
+    unsigned objectVao;
+    glGenVertexArrays(1, &objectVao);
+    glBindVertexArray(objectVao);
 
     unsigned vbo;
     glGenBuffers(1, &vbo);
@@ -93,19 +93,6 @@ static void render() {
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), reinterpret_cast<void*>(0));
     glEnableVertexAttribArray(0);
-
-    SDL_Surface* surface = IMG_Load("res/wall.png");
-    unsigned texture;
-    glGenTextures(1, &texture);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, texture);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, surface->w, surface->h, 0, GL_RGB, GL_UNSIGNED_BYTE, surface->pixels);
-    SDL_FreeSurface(surface);
-    glGenerateMipmap(GL_TEXTURE_2D);
 
     auto model = glm::mat4(1.0f);
 
@@ -139,15 +126,13 @@ static void render() {
     );
 
     shader.use();
-    shader.setValue("aTexture", 0);
     shader.setValue("view", view);
     shader.setValue("projection", projection);
     shader.setValue("model", model);
 
     glDrawArrays(GL_TRIANGLES, 0, 36);
 
-    glDeleteTextures(1, &texture);
-    glDeleteVertexArrays(1, &vao);
+    glDeleteVertexArrays(1, &objectVao);
     glDeleteBuffers(1, &vbo);
 }
 
