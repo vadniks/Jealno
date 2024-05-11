@@ -102,8 +102,6 @@ static void render() {
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), reinterpret_cast<void*>(6 * sizeof(float)));
     glEnableVertexAttribArray(2);
 
-    auto objectModel = glm::mat4(1.0f);
-
     unsigned diffuseTexture;
     glGenTextures(1, &diffuseTexture);
     glActiveTexture(GL_TEXTURE0);
@@ -163,7 +161,7 @@ static void render() {
             };
 
             struct Light {
-                vec3 position;
+                vec3 direction;
                 vec3 ambient;
                 vec3 diffuse;
                 vec3 specular;
@@ -183,7 +181,7 @@ static void render() {
                 vec3 ambient = light.ambient * vec3(texture(material.diffuse, TexCoords));
 
                 vec3 norm = normalize(Normal);
-                vec3 lightDir = normalize(light.position - FragPos);
+                vec3 lightDir = normalize(-light.direction);
                 float diff = max(dot(norm, lightDir), 0.0);
                 vec3 diffuse = light.diffuse * diff * vec3(texture(material.diffuse, TexCoords));
 
@@ -203,15 +201,35 @@ static void render() {
     objectShader.setValue("material.specular", 1);
     objectShader.setValue("viewPos", gCamera.position());
     objectShader.setValue("material.shininess", 32.0f);
-    objectShader.setValue("light.position", lightPosition);
+    objectShader.setValue("light.direction", glm::vec3(-0.2f, -1.0f, -0.3f));
     objectShader.setValue("light.ambient", glm::vec3(0.2f, 0.2f, 0.2f));
     objectShader.setValue("light.diffuse", glm::vec3(0.5f, 0.5f, 0.5f)); // darkened
     objectShader.setValue("light.specular", glm::vec3(1.0f, 1.0f, 1.0f));
-    objectShader.setValue("model", objectModel);
     objectShader.setValue("view", view);
     objectShader.setValue("projection", projection);
 
-    glDrawArrays(GL_TRIANGLES, 0, 36);
+    glm::vec3 cubePositions[] = {
+        glm::vec3( 0.0f, 0.0f, 0.0f),
+        glm::vec3( 2.0f, 5.0f, -15.0f),
+        glm::vec3(-1.5f, -2.2f, -2.5f),
+        glm::vec3(-3.8f, -2.0f, -12.3f),
+        glm::vec3( 2.4f, -0.4f, -3.5f),
+        glm::vec3(-1.7f, 3.0f, -7.5f),
+        glm::vec3( 1.3f, -2.0f, -2.5f),
+        glm::vec3( 1.5f, 2.0f, -2.5f),
+        glm::vec3( 1.5f, 0.2f, -1.5f),
+        glm::vec3(-1.3f, 1.0f, -1.5f)
+    };
+
+    for (int i = 0; i < 10; i++) {
+        auto objectModel = glm::mat4(1.0f);
+        objectModel = glm::translate(objectModel, cubePositions[i]);
+        objectModel = glm::rotate(objectModel, glm::radians(20.0f * static_cast<float>(i)), glm::vec3(1.0f, 0.3f, 0.5f));
+
+        objectShader.setValue("model", objectModel);
+
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+    }
 
     //
 
