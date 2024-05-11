@@ -147,8 +147,6 @@ static void render() {
             in vec3 Normal;
             in vec3 FragPos;
 
-            uniform vec3 objectColor;
-            uniform vec3 lightColor;
             uniform vec3 viewPos;
             uniform Material material;
             uniform Light light;
@@ -173,8 +171,6 @@ static void render() {
     );
 
     objectShader.use();
-    objectShader.setValue("objectColor", glm::vec3(1.0f, 0.5f, 0.31f));
-    objectShader.setValue("lightColor", glm::vec3(1.0f, 1.0f, 1.0f));
     objectShader.setValue("viewPos", gCamera.position());
     objectShader.setValue("material.ambient", glm::vec3(1.0f, 0.5f, 0.31f));
     objectShader.setValue("material.diffuse", glm::vec3(1.0f, 0.5f, 0.31f));
