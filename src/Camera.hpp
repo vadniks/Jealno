@@ -33,7 +33,7 @@ public:
 private:
     glm::vec3 mPosition, mFront, mUp, mRight, mWorldUp;
     float mYaw = -90.0f, mPitch = 0.0f;
-    const float mSpeed = 2.5f, mSensitivity = 0.1f;
+    const float mSpeed = 0.1f, mSensitivity = 0.1f;
     float mZoom = 45.0f;
 public:
     explicit Camera(

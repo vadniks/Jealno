@@ -27,10 +27,7 @@ Camera::Camera(const glm::vec3& position, const glm::vec3& up, float yaw, float 
     mRight(),
     mWorldUp(up),
     mYaw(yaw),
-    mPitch(pitch),
-    mSpeed(2.5f),
-    mSensitivity(0.1f),
-    mZoom(45.0f)
+    mPitch(pitch)
 {
     updateCameraVectors();
 }
