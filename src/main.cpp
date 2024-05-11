@@ -28,7 +28,7 @@
 #include <glm/ext/matrix_clip_space.hpp>
 
 static int gWidth = 0, gHeight = 0;
-static Camera gCamera(glm::vec3(0.0f, 0.0f, 3.0f));
+static Camera gCamera(glm::vec3(0.0f, 0.0f, 7.5f));
 
 static float normalize(int coordinate, int axis) {
     return 2.0f * (static_cast<float>(coordinate) + 0.5f) / static_cast<float>(axis) - 1.0f;
@@ -43,6 +43,9 @@ static float normalizeY(int coordinate) {
 }
 
 static void render() {
+    auto view = gCamera.viewMatrix();
+    glm::mat4 projection = glm::perspective(glm::radians(gCamera.zoom()), static_cast<float>(gWidth) / static_cast<float>(gHeight), 0.1f, 100.0f);
+
     float vertices[] = {
         -0.5f, -0.5f, -0.5f,
         0.5f, -0.5f, -0.5f,
@@ -94,13 +97,61 @@ static void render() {
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), reinterpret_cast<void*>(0));
     glEnableVertexAttribArray(0);
 
-    auto model = glm::mat4(1.0f);
+    auto objectModel = glm::mat4(1.0f);
 
-    auto view = gCamera.viewMatrix();
+    CompoundShader objectShader(
+        R"(
+            #version 330 core
 
-    glm::mat4 projection = glm::perspective(glm::radians(gCamera.zoom()), static_cast<float>(gWidth) / static_cast<float>(gHeight), 0.1f, 100.0f);
+            layout (location = 0) in vec3 aPosition;
 
-    CompoundShader shader(
+            uniform mat4 model;
+            uniform mat4 view;
+            uniform mat4 projection;
+
+            void main() {
+                gl_Position = projection * view * model * vec4(aPosition, 1.0);
+            }
+        )",
+        R"(
+            #version 330 core
+
+            out vec4 color;
+
+            uniform vec3 objectColor;
+            uniform vec3 lightColor;
+
+            void main() {
+                color = vec4(lightColor * objectColor, 1.0);
+            }
+        )"
+    );
+
+    objectShader.use();
+    objectShader.setValue("objectColor", glm::vec3(1.0f, 0.5f, 0.31f));
+    objectShader.setValue("lightColor", glm::vec3(1.0f, 1.0f, 1.0f));
+    objectShader.setValue("view", view);
+    objectShader.setValue("projection", projection);
+    objectShader.setValue("model", objectModel);
+
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+
+    //
+
+    unsigned lightVao;
+    glGenVertexArrays(1, &lightVao);
+    glBindVertexArray(lightVao);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), reinterpret_cast<void*>(0));
+    glEnableVertexAttribArray(0);
+
+    auto lightModel = glm::mat4(1.0f);
+    lightModel = glm::translate(lightModel, glm::vec3(1.2f, 1.0f, 2.0f));
+    lightModel = glm::scale(lightModel, glm::vec3(0.2f));
+
+    CompoundShader lightShader(
         R"(
             #version 330 core
 
@@ -120,19 +171,22 @@ static void render() {
             out vec4 color;
 
             void main() {
-                color = vec4(0.5, 0.5, 0.5, 1.0);
+                color = vec4(1.0);
             }
         )"
     );
 
-    shader.use();
-    shader.setValue("view", view);
-    shader.setValue("projection", projection);
-    shader.setValue("model", model);
+    lightShader.use();
+    lightShader.setValue("view", view);
+    lightShader.setValue("projection", projection);
+    lightShader.setValue("model", lightModel);
 
     glDrawArrays(GL_TRIANGLES, 0, 36);
 
+    //
+
     glDeleteVertexArrays(1, &objectVao);
+    glDeleteVertexArrays(1, &lightVao);
     glDeleteBuffers(1, &vbo);
 }
 
@@ -189,7 +243,7 @@ static void renderLoop(SDL_Window* window) {
             }
         }
 
-        glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+        glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         render();
 
