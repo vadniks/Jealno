@@ -45,7 +45,7 @@ static float normalizeY(int coordinate) {
 static void render() {
     auto view = gCamera.viewMatrix();
     glm::mat4 projection = glm::perspective(glm::radians(gCamera.zoom()), static_cast<float>(gWidth) / static_cast<float>(gHeight), 0.1f, 100.0f);
-    glm::vec3 lightPosition = glm::vec3(1.0f + sin(SDL_GetTicks() / 100) * 2.0f, sin(SDL_GetTicks() / 100 / 2.0f) * 1.0f, 2.0f);
+    glm::vec3 lightPosition = glm::vec3(1.0f, 1.0f, 2.0f);
 
     float vertices[] = {
         -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f,
