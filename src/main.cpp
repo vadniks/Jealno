@@ -45,6 +45,7 @@ static float normalizeY(int coordinate) {
 static void render() {
     auto view = gCamera.viewMatrix();
     glm::mat4 projection = glm::perspective(glm::radians(gCamera.zoom()), static_cast<float>(gWidth) / static_cast<float>(gHeight), 0.1f, 100.0f);
+    glm::vec3 lightPosition = glm::vec3(1.2f, 1.0f, 2.0f);
 
     float vertices[] = {
         -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f,
@@ -111,12 +112,17 @@ static void render() {
             layout (location = 1) in vec3 aNormal;
             layout (location = 1) in vec2 aTexture;
 
+            out vec3 normal;
+            out vec3 fragmentPosition;
+
             uniform mat4 model;
             uniform mat4 view;
             uniform mat4 projection;
 
             void main() {
                 gl_Position = projection * view * model * vec4(aPosition, 1.0);
+                fragmentPosition = vec3(model * vec4(aPosition, 1.0));
+                normal = aNormal;
             }
         )",
         R"(
@@ -124,12 +130,23 @@ static void render() {
 
             out vec4 color;
 
+            in vec3 normal;
+            in vec3 fragmentPosition;
+
             uniform vec3 objectColor;
             uniform vec3 lightColor;
+            uniform vec3 lightPosition;
 
             void main() {
+                vec3 norm = normalize(normal);
+                vec3 lightDirection = normalize(lightPosition - fragmentPosition);
+
+                float diff = max(dot(norm, lightDirection), 0.0);
+                vec3 diffuse = diff * lightColor;
+
                 vec3 ambient = 0.1 * lightColor;
-                color = vec4(ambient * objectColor, 1.0);
+
+                color = vec4((ambient + diffuse) * objectColor, 1.0);
             }
         )"
     );
@@ -137,6 +154,7 @@ static void render() {
     objectShader.use();
     objectShader.setValue("objectColor", glm::vec3(1.0f, 0.5f, 0.31f));
     objectShader.setValue("lightColor", glm::vec3(1.0f, 1.0f, 1.0f));
+    objectShader.setValue("lightPosition", lightPosition);
     objectShader.setValue("view", view);
     objectShader.setValue("projection", projection);
     objectShader.setValue("model", objectModel);
@@ -155,7 +173,7 @@ static void render() {
     glEnableVertexAttribArray(0);
 
     auto lightModel = glm::mat4(1.0f);
-    lightModel = glm::translate(lightModel, glm::vec3(1.2f, 1.0f, 2.0f));
+    lightModel = glm::translate(lightModel, lightPosition);
     lightModel = glm::scale(lightModel, glm::vec3(0.2f));
 
     CompoundShader lightShader(
