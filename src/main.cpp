@@ -108,52 +108,58 @@ static void render() {
         R"(
             #version 330 core
 
-            layout (location = 0) in vec3 aPosition;
+            layout (location = 0) in vec3 aPos;
             layout (location = 1) in vec3 aNormal;
-            layout (location = 2) in vec2 aTexture;
+            layout (location = 2) in vec2 aTex;
 
-            out vec3 normal;
-            out vec3 fragmentPosition;
-            out vec3 lightPosition;
+            out vec3 FragPos;
+            out vec3 Normal;
 
             uniform mat4 model;
             uniform mat4 view;
             uniform mat4 projection;
-            uniform vec3 lightPos;
 
             void main() {
-                gl_Position = projection * view * model * vec4(aPosition, 1.0);
-                fragmentPosition = vec3(view * model * vec4(aPosition, 1.0));
-                normal = mat3(transpose(inverse(view * model))) * aNormal;
-                lightPosition = vec3(view * vec4(lightPos, 1.0));
+                FragPos = vec3(model * vec4(aPos, 1.0));
+                Normal = mat3(transpose(inverse(model))) * aNormal;
+                gl_Position = projection * view * model * vec4(aPos, 1.0);
             }
         )",
         R"(
             #version 330 core
+            struct Material {
+                vec3 ambient;
+                vec3 diffuse;
+                vec3 specular;
+                float shininess;
+            };
 
-            out vec4 color;
+            out vec4 FragColor;
 
-            in vec3 normal;
-            in vec3 fragmentPosition;
-            in vec3 lightPosition;
+            in vec3 Normal;
+            in vec3 FragPos;
 
             uniform vec3 objectColor;
             uniform vec3 lightColor;
+            uniform vec3 lightPos;
+            uniform vec3 viewPos;
+            uniform Material material;
 
             void main() {
-                vec3 ambient = 0.1 * lightColor;
+                vec3 ambient = lightColor * material.ambient;
 
-                vec3 norm = normalize(normal);
-                vec3 lightDirection = normalize(lightPosition - fragmentPosition);
-                float diff = max(dot(norm, lightDirection), 0.0);
-                vec3 diffuse = diff * lightColor;
+                vec3 norm = normalize(Normal);
+                vec3 lightDir = normalize(lightPos - FragPos);
+                float diff = max(dot(norm, lightDir), 0.0);
+                vec3 diffuse = lightColor * (diff * material.diffuse);
 
-                vec3 viewDirection = normalize(-fragmentPosition);
-                vec3 reflectDirection = reflect(-lightDirection, norm);
-                float spec = pow(max(dot(viewDirection, reflectDirection), 0.0), 32);
-                vec3 specular = 0.5 * spec * lightColor;
+                vec3 viewDir = normalize(viewPos - FragPos);
+                vec3 reflectDir = reflect(-lightDir, norm);
+                float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+                vec3 specular = lightColor * (spec * material.specular);
 
-                color = vec4((ambient + diffuse + specular) * objectColor, 1.0);
+                vec3 result = ambient + diffuse + specular;
+                FragColor = vec4(result, 1.0);
             }
         )"
     );
@@ -162,9 +168,14 @@ static void render() {
     objectShader.setValue("objectColor", glm::vec3(1.0f, 0.5f, 0.31f));
     objectShader.setValue("lightColor", glm::vec3(1.0f, 1.0f, 1.0f));
     objectShader.setValue("lightPos", lightPosition);
+    objectShader.setValue("viewPos", gCamera.position());
+    objectShader.setValue("material.ambient", glm::vec3(1.0f, 0.5f, 0.31f));
+    objectShader.setValue("material.diffuse", glm::vec3(1.0f, 0.5f, 0.31f));
+    objectShader.setValue("material.specular", glm::vec3(0.5f, 0.5f, 0.5f));
+    objectShader.setValue("material.shininess", 32.0f);
+    objectShader.setValue("model", objectModel);
     objectShader.setValue("view", view);
     objectShader.setValue("projection", projection);
-    objectShader.setValue("model", objectModel);
 
     glDrawArrays(GL_TRIANGLES, 0, 36);
 
