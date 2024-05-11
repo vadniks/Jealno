@@ -44,42 +44,42 @@ static float normalizeY(int coordinate) {
 
 static void render() {
     float vertices[] = {
-        -0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
-        0.5f, -0.5f, -0.5f, 1.0f, 0.0f,
-        0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
-        0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
-        -0.5f, 0.5f, -0.5f, 0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
-        -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
-        0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
-        0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
-        0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
-        -0.5f, 0.5f, 0.5f, 0.0f, 1.0f,
-        -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
-        -0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
-        -0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
-        -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
-        -0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
-        0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
-        0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
-        0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
-        0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
-        0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
-        0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
-        -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
-        0.5f, -0.5f, -0.5f, 1.0f, 1.0f,
-        0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
-        0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
-        -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
-        -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
-        -0.5f, 0.5f, -0.5f, 0.0f, 1.0f,
-        0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
-        0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
-        0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
-        -0.5f, 0.5f, 0.5f, 0.0f, 0.0f,
-        -0.5f, 0.5f, -0.5f, 0.0f, 1.0f
+        -0.5f, -0.5f, -0.5f,
+        0.5f, -0.5f, -0.5f,
+        0.5f, 0.5f, -0.5f,
+        0.5f, 0.5f, -0.5f,
+        -0.5f, 0.5f, -0.5f,
+        -0.5f, -0.5f, -0.5f,
+        -0.5f, -0.5f, 0.5f,
+        0.5f, -0.5f, 0.5f,
+        0.5f, 0.5f, 0.5f,
+        0.5f, 0.5f, 0.5f,
+        -0.5f, 0.5f, 0.5f,
+        -0.5f, -0.5f, 0.5f,
+        -0.5f, 0.5f, 0.5f,
+        -0.5f, 0.5f, -0.5f,
+        -0.5f, -0.5f, -0.5f,
+        -0.5f, -0.5f, -0.5f,
+        -0.5f, -0.5f, 0.5f,
+        -0.5f, 0.5f, 0.5f,
+        0.5f, 0.5f, 0.5f,
+        0.5f, 0.5f, -0.5f,
+        0.5f, -0.5f, -0.5f,
+        0.5f, -0.5f, -0.5f,
+        0.5f, -0.5f, 0.5f,
+        0.5f, 0.5f, 0.5f,
+        -0.5f, -0.5f, -0.5f,
+        0.5f, -0.5f, -0.5f,
+        0.5f, -0.5f, 0.5f,
+        0.5f, -0.5f, 0.5f,
+        -0.5f, -0.5f, 0.5f,
+        -0.5f, -0.5f, -0.5f,
+        -0.5f, 0.5f, -0.5f,
+        0.5f, 0.5f, -0.5f,
+        0.5f, 0.5f, 0.5f,
+        0.5f, 0.5f, 0.5f,
+        -0.5f, 0.5f, 0.5f,
+        -0.5f, 0.5f, -0.5f,
     };
 
     unsigned vao;
@@ -91,10 +91,8 @@ static void render() {
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), reinterpret_cast<void*>(0));
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), reinterpret_cast<void*>(0));
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), reinterpret_cast<void*>(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
 
     SDL_Surface* surface = IMG_Load("res/wall.png");
     unsigned texture;
@@ -109,6 +107,8 @@ static void render() {
     SDL_FreeSurface(surface);
     glGenerateMipmap(GL_TEXTURE_2D);
 
+    auto model = glm::mat4(1.0f);
+
     auto view = gCamera.viewMatrix();
 
     glm::mat4 projection = glm::perspective(glm::radians(gCamera.zoom()), static_cast<float>(gWidth) / static_cast<float>(gHeight), 0.1f, 100.0f);
@@ -118,9 +118,6 @@ static void render() {
             #version 330 core
 
             layout (location = 0) in vec3 aPosition;
-            layout (location = 1) in vec2 aTexCoord;
-
-            out vec2 bTexCoord;
 
             uniform mat4 model;
             uniform mat4 view;
@@ -128,20 +125,15 @@ static void render() {
 
             void main() {
                 gl_Position = projection * view * model * vec4(aPosition, 1.0);
-                bTexCoord = aTexCoord;
             }
         )",
         R"(
             #version 330 core
 
-            in vec2 bTexCoord;
-
             out vec4 color;
 
-            uniform sampler2D aTexture;
-
             void main() {
-                color = texture(aTexture, bTexCoord);
+                color = vec4(0.5, 0.5, 0.5, 1.0);
             }
         )"
     );
@@ -150,29 +142,9 @@ static void render() {
     shader.setValue("aTexture", 0);
     shader.setValue("view", view);
     shader.setValue("projection", projection);
+    shader.setValue("model", model);
 
-    glm::vec3 cubePositions[] = {
-        glm::vec3( 0.0f, 0.0f, 0.0f),
-        glm::vec3( 2.0f, 5.0f, -15.0f),
-        glm::vec3(-1.5f, -2.2f, -2.5f),
-        glm::vec3(-3.8f, -2.0f, -12.3f),
-        glm::vec3( 2.4f, -0.4f, -3.5f),
-        glm::vec3(-1.7f, 3.0f, -7.5f),
-        glm::vec3( 1.3f, -2.0f, -2.5f),
-        glm::vec3( 1.5f, 2.0f, -2.5f),
-        glm::vec3( 1.5f, 0.2f, -1.5f),
-        glm::vec3(-1.3f, 1.0f, -1.5f)
-    };
-
-    for (int i = 0; i < 10; i++) {
-        auto model = glm::mat4(1.0f);
-        model = glm::translate(model, cubePositions[i]);
-        model = glm::rotate(model, glm::radians(static_cast<float>(i) * 180.0f), glm::vec3(1.0f, 0.3f, 0.5f));
-
-        shader.setValue("model", model);
-
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-    }
+    glDrawArrays(GL_TRIANGLES, 0, 36);
 
     glDeleteTextures(1, &texture);
     glDeleteVertexArrays(1, &vao);
