@@ -28,10 +28,12 @@ private:
 public:
     CompoundShader(const std::string& vertexSource, const std::string& fragmentSource);
     CompoundShader(const CompoundShader&) = delete;
+    CompoundShader(CompoundShader&&) = delete;
 
     ~CompoundShader();
 
     CompoundShader& operator =(const CompoundShader&) = delete;
+    CompoundShader& operator =(CompoundShader&&) = delete;
 
     void use();
     void setValue(const std::string& name, bool value);
