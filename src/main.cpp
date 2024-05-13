@@ -216,8 +216,8 @@ static void render() {
     objectShader.setValue("light.diffuse", glm::vec3(0.5f, 0.5f, 0.5f));
     objectShader.setValue("light.specular", glm::vec3(1.0f, 1.0f, 1.0f));
     objectShader.setValue("light.constant", 1.0f);
-    objectShader.setValue("light.linear", 0.09f);
-    objectShader.setValue("light.quadratic", 0.032f);
+    objectShader.setValue("light.linear", 0.045f);
+    objectShader.setValue("light.quadratic", 0.0075f);
     objectShader.setValue("view", view);
     objectShader.setValue("projection", projection);
 
