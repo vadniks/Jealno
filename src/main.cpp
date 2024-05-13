@@ -161,10 +161,13 @@ static void render() {
             };
 
             struct Light {
-                vec3 direction;
+                vec3 position;
                 vec3 ambient;
                 vec3 diffuse;
                 vec3 specular;
+                float constant;
+                float linear;
+                float quadratic;
             };
 
             out vec4 FragColor;
@@ -181,7 +184,7 @@ static void render() {
                 vec3 ambient = light.ambient * vec3(texture(material.diffuse, TexCoords));
 
                 vec3 norm = normalize(Normal);
-                vec3 lightDir = normalize(-light.direction);
+                vec3 lightDir = normalize(light.position - FragPos);
                 float diff = max(dot(norm, lightDir), 0.0);
                 vec3 diffuse = light.diffuse * diff * vec3(texture(material.diffuse, TexCoords));
 
@@ -189,6 +192,13 @@ static void render() {
                 vec3 reflectDir = reflect(-lightDir, norm);
                 float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
                 vec3 specular = light.specular * spec * vec3(texture(material.specular, TexCoords));
+
+                float distance = length(light.position - FragPos);
+                float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));
+
+                ambient *= attenuation;
+                diffuse *= attenuation;
+                specular *= attenuation;
 
                 vec3 result = ambient + diffuse + specular;
                 FragColor = vec4(result, 1.0);
@@ -201,10 +211,13 @@ static void render() {
     objectShader.setValue("material.specular", 1);
     objectShader.setValue("viewPos", gCamera.position());
     objectShader.setValue("material.shininess", 32.0f);
-    objectShader.setValue("light.direction", glm::vec3(-0.2f, -1.0f, -0.3f));
+    objectShader.setValue("light.position", lightPosition);
     objectShader.setValue("light.ambient", glm::vec3(0.2f, 0.2f, 0.2f));
     objectShader.setValue("light.diffuse", glm::vec3(0.5f, 0.5f, 0.5f));
     objectShader.setValue("light.specular", glm::vec3(1.0f, 1.0f, 1.0f));
+    objectShader.setValue("light.constant", 1.0f);
+    objectShader.setValue("light.linear", 0.09f);
+    objectShader.setValue("light.quadratic", 0.032f);
     objectShader.setValue("view", view);
     objectShader.setValue("projection", projection);
 
