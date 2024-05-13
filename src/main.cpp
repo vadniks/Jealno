@@ -203,7 +203,7 @@ static void render() {
     objectShader.setValue("material.shininess", 32.0f);
     objectShader.setValue("light.direction", glm::vec3(-0.2f, -1.0f, -0.3f));
     objectShader.setValue("light.ambient", glm::vec3(0.2f, 0.2f, 0.2f));
-    objectShader.setValue("light.diffuse", glm::vec3(0.5f, 0.5f, 0.5f)); // darkened
+    objectShader.setValue("light.diffuse", glm::vec3(0.5f, 0.5f, 0.5f));
     objectShader.setValue("light.specular", glm::vec3(1.0f, 1.0f, 1.0f));
     objectShader.setValue("view", view);
     objectShader.setValue("projection", projection);
