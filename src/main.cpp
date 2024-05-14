@@ -110,7 +110,9 @@ static void render() {
     objectShader.setValue("material.specular", 1);
     objectShader.setValue("viewPos", gCamera.position());
     objectShader.setValue("material.shininess", 32.0f);
-    objectShader.setValue("light.position", lightPosition);
+    objectShader.setValue("light.position", gCamera.position());
+    objectShader.setValue("light.direction", gCamera.front());
+    objectShader.setValue("light.cutOff", glm::cos(glm::radians(12.5f)));
     objectShader.setValue("light.ambient", glm::vec3(0.2f, 0.2f, 0.2f));
     objectShader.setValue("light.diffuse", glm::vec3(0.5f, 0.5f, 0.5f));
     objectShader.setValue("light.specular", glm::vec3(1.0f, 1.0f, 1.0f));
