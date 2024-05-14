@@ -17,19 +17,36 @@
  */
 
 #include "CompoundShader.hpp"
+#include <SDL2/SDL.h>
 #include <GL/glew.h>
 #include <glm/gtc/type_ptr.hpp>
 
-CompoundShader::CompoundShader(const std::string& vertexCode, const std::string& fragmentCode) {
+CompoundShader::CompoundShader(const std::string& vertexPath, const std::string& fragmentPath) {
+    SDL_RWops* vertexFile = SDL_RWFromFile(vertexPath.c_str(), "r");
+    assert(vertexFile != nullptr);
+    const int vertexSize = (int) SDL_RWsize(vertexFile);
+    char vertexSource[vertexSize + 1];
+    assert(SDL_RWread(vertexFile, vertexSource, 1, vertexSize) == (unsigned long) vertexSize);
+    SDL_RWclose(vertexFile);
+    vertexSource[vertexSize] = 0;
+
+    SDL_RWops* fragmentFile = SDL_RWFromFile(fragmentPath.c_str(), "r");
+    assert(fragmentFile != nullptr);
+    const int fragmentSize = (int) SDL_RWsize(fragmentFile);
+    char fragmentSource[fragmentSize + 1];
+    assert(SDL_RWread(fragmentFile, fragmentSource, 1, fragmentSize) == (unsigned long) fragmentSize);
+    SDL_RWclose(fragmentFile);
+    fragmentSource[fragmentSize] = 0;
+
     int success;
     unsigned vertex = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertex, 1, (const char*[1]) {vertexCode.c_str()}, nullptr);
+    glShaderSource(vertex, 1, (const char*[1]) {vertexSource}, nullptr);
     glCompileShader(vertex);
     glGetShaderiv(vertex, GL_COMPILE_STATUS, &success);
     assert(success == GL_TRUE);
 
     unsigned fragment = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragment, 1, (const char*[1]) {fragmentCode.c_str()}, nullptr);
+    glShaderSource(fragment, 1, (const char*[1]) {fragmentSource}, nullptr);
     glCompileShader(fragment);
     glGetShaderiv(fragment, GL_COMPILE_STATUS, &success);
     assert(success == GL_TRUE);

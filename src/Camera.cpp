@@ -100,3 +100,7 @@ float Camera::zoom() {
 glm::vec3 Camera::position() {
     return mPosition;
 }
+
+glm::vec3 Camera::front() {
+    return mFront;
+}

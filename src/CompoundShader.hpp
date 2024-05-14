@@ -26,7 +26,7 @@ class CompoundShader final {
 private:
     unsigned mProgramId;
 public:
-    CompoundShader(const std::string& vertexSource, const std::string& fragmentSource);
+    CompoundShader(const std::string& vertexPath, const std::string& fragmentPath);
     CompoundShader(const CompoundShader&) = delete;
     CompoundShader(CompoundShader&&) = delete;
 
