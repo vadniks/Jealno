@@ -113,6 +113,7 @@ static void render() {
     objectShader.setValue("light.position", gCamera.position());
     objectShader.setValue("light.direction", gCamera.front());
     objectShader.setValue("light.cutOff", glm::cos(glm::radians(12.5f)));
+    objectShader.setValue("light.outerCutOff", glm::cos(glm::radians(17.5f)));
     objectShader.setValue("light.ambient", glm::vec3(0.2f, 0.2f, 0.2f));
     objectShader.setValue("light.diffuse", glm::vec3(0.5f, 0.5f, 0.5f));
     objectShader.setValue("light.specular", glm::vec3(1.0f, 1.0f, 1.0f));
@@ -167,7 +168,7 @@ static void render() {
     lightShader.setValue("projection", projection);
     lightShader.setValue("model", lightModel);
 
-    glDrawArrays(GL_TRIANGLES, 0, 36);
+//    glDrawArrays(GL_TRIANGLES, 0, 36);
 
     //
 
