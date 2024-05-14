@@ -103,27 +103,36 @@ static void render() {
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), reinterpret_cast<void*>(6 * sizeof(float)));
     glEnableVertexAttribArray(2);
 
+    const int pointLights = 4;
+    glm::vec3 pointLightPositions[pointLights] = {
+        glm::vec3( 0.7f, 0.2f, 2.0f),
+        glm::vec3( 2.3f, -3.3f, -4.0f),
+        glm::vec3(-4.0f, 2.0f, -12.0f),
+        glm::vec3( 0.0f, 0.0f, -3.0f)
+    };
+
     CompoundShader objectShader("shaders/objectVertex.glsl", "shaders/objectFragment.glsl");
 
     objectShader.use();
-    objectShader.setValue("material.diffuse", 0);
-    objectShader.setValue("material.specular", 1);
-    objectShader.setValue("viewPos", gCamera.position());
-    objectShader.setValue("material.shininess", 32.0f);
-    objectShader.setValue("light.position", gCamera.position());
-    objectShader.setValue("light.direction", gCamera.front());
-    objectShader.setValue("light.cutOff", glm::cos(glm::radians(12.5f)));
-    objectShader.setValue("light.outerCutOff", glm::cos(glm::radians(17.5f)));
-    objectShader.setValue("light.ambient", glm::vec3(0.2f, 0.2f, 0.2f));
-    objectShader.setValue("light.diffuse", glm::vec3(0.5f, 0.5f, 0.5f));
-    objectShader.setValue("light.specular", glm::vec3(1.0f, 1.0f, 1.0f));
-    objectShader.setValue("light.constant", 1.0f);
-    objectShader.setValue("light.linear", 0.045f);
-    objectShader.setValue("light.quadratic", 0.0075f);
     objectShader.setValue("view", view);
     objectShader.setValue("projection", projection);
+    objectShader.setValue("viewPos", gCamera.position());
+    objectShader.setValue("material.diffuse", 0);
+    objectShader.setValue("material.specular", 1);
+    objectShader.setValue("material.shininess", 32.0f);
 
-    glm::vec3 cubePositions[] = {
+    for (int i = 0; i < pointLights; i++) {
+        objectShader.setValue(std::string("pointLights[").append(std::to_string(i)).append("].position"), pointLightPositions[i]);
+        objectShader.setValue(std::string("pointLights[").append(std::to_string(i)).append("].constant"), glm::vec3(0.2f, 0.2f, 0.2f));
+        objectShader.setValue(std::string("pointLights[").append(std::to_string(i)).append("].linear"), 0.045f);
+        objectShader.setValue(std::string("pointLights[").append(std::to_string(i)).append("].quadratic"), 0.0075f);
+        objectShader.setValue(std::string("pointLights[").append(std::to_string(i)).append("].ambient"), glm::vec3(0.2f, 0.2f, 0.2f));
+        objectShader.setValue(std::string("pointLights[").append(std::to_string(i)).append("].diffuse"), glm::vec3(0.5f, 0.5f, 0.5f));
+        objectShader.setValue(std::string("pointLights[").append(std::to_string(i)).append("].specular"), glm::vec3(1.0f, 1.0f, 1.0f));
+    }
+
+    const int cubes = 10;
+    glm::vec3 cubePositions[cubes] = {
         glm::vec3( 0.0f, 0.0f, 0.0f),
         glm::vec3( 2.0f, 5.0f, -15.0f),
         glm::vec3(-1.5f, -2.2f, -2.5f),
@@ -136,7 +145,7 @@ static void render() {
         glm::vec3(-1.3f, 1.0f, -1.5f)
     };
 
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < cubes; i++) {
         auto objectModel = glm::mat4(1.0f);
         objectModel = glm::translate(objectModel, cubePositions[i]);
         objectModel = glm::rotate(objectModel, glm::radians(20.0f * static_cast<float>(i)), glm::vec3(1.0f, 0.3f, 0.5f));
@@ -157,18 +166,19 @@ static void render() {
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), reinterpret_cast<void*>(0));
     glEnableVertexAttribArray(0);
 
-    auto lightModel = glm::mat4(1.0f);
-    lightModel = glm::translate(lightModel, lightPosition);
-    lightModel = glm::scale(lightModel, glm::vec3(0.2f));
-
     CompoundShader lightShader("shaders/lightVertex.glsl", "shaders/lightFragment.glsl");
-
     lightShader.use();
     lightShader.setValue("view", view);
     lightShader.setValue("projection", projection);
-    lightShader.setValue("model", lightModel);
 
-//    glDrawArrays(GL_TRIANGLES, 0, 36);
+    for (int i = 0; i < pointLights; i++) {
+        auto lightModel = glm::mat4(1.0f);
+        lightModel = glm::translate(lightModel, pointLightPositions[i]);
+        lightModel = glm::scale(lightModel, glm::vec3(0.2f));
+        lightShader.setValue("model", lightModel);
+
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+    }
 
     //
 
