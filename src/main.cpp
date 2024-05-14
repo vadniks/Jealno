@@ -120,15 +120,19 @@ static void render() {
     objectShader.setValue("material.diffuse", 0);
     objectShader.setValue("material.specular", 1);
     objectShader.setValue("material.shininess", 32.0f);
+    objectShader.setValue("dirLight.direction", glm::vec3(-0.2f, -1.0f, -0.3f));
+    objectShader.setValue("dirLight.ambient", glm::vec3(0.1f, 0.1f, 0.1f));
+    objectShader.setValue("dirLight.diffuse", glm::vec3(0.3f, 0.3f, 0.3f));
+    objectShader.setValue("dirLight.specular", glm::vec3(0.7f, 0.7f, 0.7f));
 
     for (int i = 0; i < pointLights; i++) {
         objectShader.setValue(std::string("pointLights[").append(std::to_string(i)).append("].position"), pointLightPositions[i]);
-        objectShader.setValue(std::string("pointLights[").append(std::to_string(i)).append("].constant"), glm::vec3(0.2f, 0.2f, 0.2f));
+        objectShader.setValue(std::string("pointLights[").append(std::to_string(i)).append("].constant"), glm::vec3(0.1f, 0.1f, 0.1f));
         objectShader.setValue(std::string("pointLights[").append(std::to_string(i)).append("].linear"), 0.045f);
         objectShader.setValue(std::string("pointLights[").append(std::to_string(i)).append("].quadratic"), 0.0075f);
-        objectShader.setValue(std::string("pointLights[").append(std::to_string(i)).append("].ambient"), glm::vec3(0.2f, 0.2f, 0.2f));
-        objectShader.setValue(std::string("pointLights[").append(std::to_string(i)).append("].diffuse"), glm::vec3(0.5f, 0.5f, 0.5f));
-        objectShader.setValue(std::string("pointLights[").append(std::to_string(i)).append("].specular"), glm::vec3(1.0f, 1.0f, 1.0f));
+        objectShader.setValue(std::string("pointLights[").append(std::to_string(i)).append("].ambient"), glm::vec3(0.1f, 0.1f, 0.1f));
+        objectShader.setValue(std::string("pointLights[").append(std::to_string(i)).append("].diffuse"), glm::vec3(0.3f, 0.3f, 0.3f));
+        objectShader.setValue(std::string("pointLights[").append(std::to_string(i)).append("].specular"), glm::vec3(0.7f, 0.7f, 0.7f));
     }
 
     const int cubes = 10;
