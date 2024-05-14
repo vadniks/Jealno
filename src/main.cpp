@@ -29,6 +29,7 @@
 
 static int gWidth = 0, gHeight = 0;
 static Camera gCamera(glm::vec3(0.0f, 0.0f, 7.5f));
+static unsigned gDiffuseTexture = 0, gSpecularTexture = 0;
 
 static float normalize(int coordinate, int axis) {
     return 2.0f * (static_cast<float>(coordinate) + 0.5f) / static_cast<float>(axis) - 1.0f;
@@ -102,32 +103,6 @@ static void render() {
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), reinterpret_cast<void*>(6 * sizeof(float)));
     glEnableVertexAttribArray(2);
 
-    unsigned diffuseTexture;
-    glGenTextures(1, &diffuseTexture);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, diffuseTexture);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    SDL_Surface* diffuseSurface = IMG_Load("res/container2.png");
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, diffuseSurface->w, diffuseSurface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, diffuseSurface->pixels);
-    SDL_FreeSurface(diffuseSurface);
-    glGenerateMipmap(GL_TEXTURE_2D);
-
-    unsigned specularTexture;
-    glGenTextures(1, &specularTexture);
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, specularTexture);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    SDL_Surface* specularSurface = IMG_Load("res/container2_specular.png");
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, specularSurface->w, specularSurface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, specularSurface->pixels);
-    SDL_FreeSurface(specularSurface);
-    glGenerateMipmap(GL_TEXTURE_2D);
-
     CompoundShader objectShader("shaders/objectVertex.glsl", "shaders/objectFragment.glsl");
 
     objectShader.use();
@@ -194,19 +169,39 @@ static void render() {
 
     //
 
-    glDeleteTextures(1, &diffuseTexture);
-    glDeleteTextures(1, &specularTexture);
     glDeleteVertexArrays(1, &objectVao);
     glDeleteVertexArrays(1, &lightVao);
     glDeleteBuffers(1, &vbo);
-
-    SDL_Delay(1000 / 60);
 }
 
 static void renderLoop(SDL_Window* window) {
     int width, height;
     SDL_Event event;
     bool mousePressed;
+
+    glGenTextures(1, &gDiffuseTexture);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, gDiffuseTexture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    SDL_Surface* diffuseSurface = IMG_Load("res/container2.png");
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, diffuseSurface->w, diffuseSurface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, diffuseSurface->pixels);
+    SDL_FreeSurface(diffuseSurface);
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    glGenTextures(1, &gSpecularTexture);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, gSpecularTexture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    SDL_Surface* specularSurface = IMG_Load("res/container2_specular.png");
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, specularSurface->w, specularSurface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, specularSurface->pixels);
+    SDL_FreeSurface(specularSurface);
+    glGenerateMipmap(GL_TEXTURE_2D);
 
     while (true) {
         SDL_GL_GetDrawableSize(window, &width, &height);
@@ -215,7 +210,7 @@ static void renderLoop(SDL_Window* window) {
         while (SDL_PollEvent(&event) == 1) {
             switch (event.type) {
                 case SDL_QUIT:
-                    return;
+                    goto end;
                 case SDL_KEYDOWN:
                     Camera::Direction direction;
                     switch (event.key.keysym.sym) {
@@ -262,6 +257,10 @@ static void renderLoop(SDL_Window* window) {
 
         SDL_GL_SwapWindow(window);
     }
+    end:
+
+    glDeleteTextures(1, &gDiffuseTexture);
+    glDeleteTextures(1, &gSpecularTexture);
 }
 
 int main() {
