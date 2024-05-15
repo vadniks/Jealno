@@ -18,7 +18,6 @@
 
 #include "Model.hpp"
 #include <cassert>
-#include <memory>
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
 
@@ -85,5 +84,22 @@ Mesh* Model::processMesh(aiMesh* mesh, const aiScene* scene) {
 }
 
 std::vector<Texture> Model::loadMaterialTextures(const aiMaterial* mat, aiTextureType type, const std::string& typeName) {
+    std::vector<Texture> textures;
+
+    for(int i = 0; i < (int) mat->GetTextureCount(type); i++) {
+        aiString str;
+        mat->GetTexture(type, i, &str);
+
+        Texture texture;
+        texture.id = textureFromFile(str.C_Str(), mDirectory);
+        texture.type = typeName;
+        texture.path = str.C_Str();
+        textures.push_back(std::move(texture));
+    }
+
+    return textures;
+}
+
+unsigned Model::textureFromFile(const std::string& path, const std::string& directory) {
 
 }

@@ -32,6 +32,7 @@ struct Vertex {
 struct Texture {
     unsigned int id;
     std::string type;
+    std::string path;
     static inline const std::string TYPE_DIFFUSE = "texture_diffuse";
     static inline const std::string TYPE_SPECULAR = "texture_specular";
 };
