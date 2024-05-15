@@ -105,7 +105,7 @@ static void render() {
 
     const int pointLights = 1;
     glm::vec3 pointLightPositions[pointLights] = {
-        glm::vec3(1.0f, 1.0f, 1.0f)
+        glm::vec3(1.0f, 5.0f, 5.0f)
     };
 
     CompoundShader objectShader("shaders/objectVertex.glsl", "shaders/objectFragment.glsl");
@@ -134,7 +134,7 @@ static void render() {
 
     const int cubes = 1;
     glm::vec3 cubePositions[cubes] = {
-        glm::vec3(-1.0f, -1.0f, -1.0f)
+        glm::vec3(-2.0f, -1.0f, -1.0f)
     };
 
     for (int i = 0; i < cubes; i++) {
