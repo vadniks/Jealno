@@ -30,20 +30,7 @@
 
 static int gWidth = 0, gHeight = 0;
 static Camera gCamera(glm::vec3(0.0f, 0.0f, 7.5f));
-static unsigned gDiffuseTexture = 0, gSpecularTexture = 0;
 static Model* gModel = nullptr;
-
-static float normalize(int coordinate, int axis) {
-    return 2.0f * (static_cast<float>(coordinate) + 0.5f) / static_cast<float>(axis) - 1.0f;
-}
-
-static float normalizeX(int coordinate) {
-    return normalize(coordinate, gWidth);
-}
-
-static float normalizeY(int coordinate) {
-    return normalize(coordinate, gHeight);
-}
 
 static void render() {
     auto view = gCamera.viewMatrix();
@@ -89,21 +76,10 @@ static void render() {
         -0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f
     };
 
-    unsigned objectVao;
-    glGenVertexArrays(1, &objectVao);
-    glBindVertexArray(objectVao);
-
     unsigned vbo;
     glGenBuffers(1, &vbo);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), reinterpret_cast<void*>(0));
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), reinterpret_cast<void*>(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), reinterpret_cast<void*>(6 * sizeof(float)));
-    glEnableVertexAttribArray(2);
 
     const int pointLights = 1;
     glm::vec3 pointLightPositions[pointLights] = {
@@ -163,7 +139,6 @@ static void render() {
 
     //
 
-    glDeleteVertexArrays(1, &objectVao);
     glDeleteVertexArrays(1, &lightVao);
     glDeleteBuffers(1, &vbo);
 
@@ -176,30 +151,6 @@ static void renderLoop(SDL_Window* window) {
     int width, height;
     SDL_Event event;
     bool mousePressed;
-
-    glGenTextures(1, &gDiffuseTexture);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, gDiffuseTexture);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    SDL_Surface* diffuseSurface = IMG_Load("res/container2.png");
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, diffuseSurface->w, diffuseSurface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, diffuseSurface->pixels);
-    SDL_FreeSurface(diffuseSurface);
-    glGenerateMipmap(GL_TEXTURE_2D);
-
-    glGenTextures(1, &gSpecularTexture);
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, gSpecularTexture);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    SDL_Surface* specularSurface = IMG_Load("res/container2_specular.png");
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, specularSurface->w, specularSurface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, specularSurface->pixels);
-    SDL_FreeSurface(specularSurface);
-    glGenerateMipmap(GL_TEXTURE_2D);
 
     gModel = new Model("/home/admin/Downloads/backpack/backpack.obj");
 
@@ -258,9 +209,6 @@ static void renderLoop(SDL_Window* window) {
         SDL_GL_SwapWindow(window);
     }
     end:
-
-    glDeleteTextures(1, &gDiffuseTexture);
-    glDeleteTextures(1, &gSpecularTexture);
 
     delete gModel;
 }
