@@ -18,40 +18,29 @@
 
 #pragma once
 
+#include "Mesh.hpp"
 #include "CompoundShader.hpp"
-#include <string>
 #include <vector>
-#include <glm/glm.hpp>
+#include <string>
+#include <assimp/scene.h>
 
-struct Vertex {
-    glm::vec3 Position;
-    glm::vec3 Normal;
-    glm::vec2 TexCoords;
-};
-
-struct Texture {
-    unsigned int id;
-    std::string type;
-    static inline const std::string TYPE_DIFFUSE = "texture_diffuse";
-    static inline const std::string TYPE_SPECULAR = "texture_specular";
-};
-
-class Mesh {
+class Model {
 private:
-    unsigned mVao, mVbo, mEbo;
+    std::vector<Mesh*> mMeshes;
+    std::string mDirectory;
 public:
-    std::vector<Vertex> mVertices;
-    std::vector<unsigned> mIndices;
-    std::vector<Texture> mTextures;
-public:
-    Mesh(std::vector<Vertex>&& vertices, std::vector<unsigned>&& indices, std::vector<Texture>&& textures);
-    Mesh(const Mesh&) = delete;
-    Mesh(Mesh&&) = delete;
+    explicit Model(const std::string& path);
+    Model(const Model&) = delete;
+    Model(Model&&) = delete;
 
-    ~Mesh();
+    ~Model();
 
-    Mesh& operator =(const Mesh&) = delete;
-    Mesh& operator =(Mesh&&) = delete;
+    Model& operator =(const Model&) = delete;
+    Model& operator =(Model&&) = delete;
 
     void draw(CompoundShader& shader);
+private:
+    void processNode(aiNode* node, const aiScene* scene);
+    Mesh* processMesh(aiMesh* mesh, const aiScene* scene);
+    std::vector<Texture> loadMaterialTextures(const aiMaterial* mat, aiTextureType type, const std::string& typeName);
 };

@@ -17,15 +17,19 @@
  */
 
 #include "Mesh.hpp"
+#include <memory>
 
 Mesh::Mesh(
-    const std::vector<Vertex>& vertices,
-    const std::vector<unsigned>& indices,
-    const std::vector<Texture>& textures
+    std::vector<Vertex>&& vertices,
+    std::vector<unsigned>&& indices,
+    std::vector<Texture>&& textures
 ) :
-    mVertices(vertices),
-    mIndices(indices),
-    mTextures(textures)
+    mVao(0),
+    mVbo(0),
+    mEbo(0),
+    mVertices(std::move(vertices)),
+    mIndices(std::move(indices)),
+    mTextures(std::move(textures))
 {
     glGenVertexArrays(1, &mVao);
     glGenBuffers(1, &mVbo);
@@ -34,10 +38,10 @@ Mesh::Mesh(
     glBindVertexArray(mVao);
 
     glBindBuffer(GL_ARRAY_BUFFER, mVbo);
-    glBufferData(GL_ARRAY_BUFFER, (long) (vertices.size() * sizeof(Vertex)), &(vertices[0]), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, (long) (mVertices.size() * sizeof(Vertex)), &(mVertices[0]), GL_STATIC_DRAW);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mEbo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, (long) (indices.size() * sizeof(unsigned)), &(indices[0]), GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, (long) (mIndices.size() * sizeof(unsigned)), &(mIndices[0]), GL_STATIC_DRAW);
 
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void*>(0));
@@ -57,7 +61,7 @@ Mesh::~Mesh() {
     glDeleteBuffers(1, &mEbo);
 }
 
-void Mesh::Draw(CompoundShader& shader) {
+void Mesh::draw(CompoundShader& shader) {
     shader.use();
 
     for (unsigned i = 0, diffuseNr = 0, specularNr = 0; i < mTextures.size(); i++) {
@@ -65,9 +69,9 @@ void Mesh::Draw(CompoundShader& shader) {
 
         std::string number;
         std::string name = mTextures[i].type;
-        if (name == "texture_diffuse")
+        if (name == Texture::TYPE_DIFFUSE)
             number = std::to_string(diffuseNr++);
-        else if (name == "texture_specular")
+        else if (name == Texture::TYPE_SPECULAR)
             number = std::to_string(specularNr++);
 
         shader.setValue(std::string("material.").append(name).append(number), (int) i);
