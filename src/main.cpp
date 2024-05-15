@@ -18,6 +18,7 @@
 
 #include "CompoundShader.hpp"
 #include "Camera.hpp"
+#include "Model.hpp"
 #include <cassert>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
@@ -30,6 +31,7 @@
 static int gWidth = 0, gHeight = 0;
 static Camera gCamera(glm::vec3(0.0f, 0.0f, 7.5f));
 static unsigned gDiffuseTexture = 0, gSpecularTexture = 0;
+static Model* gModel = nullptr;
 
 static float normalize(int coordinate, int axis) {
     return 2.0f * (static_cast<float>(coordinate) + 0.5f) / static_cast<float>(axis) - 1.0f;
@@ -132,20 +134,7 @@ static void render() {
         objectShader.setValue(std::string("pointLights[").append(std::to_string(i)).append("].specular"), glm::vec3(0.7f, 0.7f, 0.7f));
     }
 
-    const int cubes = 1;
-    glm::vec3 cubePositions[cubes] = {
-        glm::vec3(-2.0f, -1.0f, -1.0f)
-    };
-
-    for (int i = 0; i < cubes; i++) {
-        auto objectModel = glm::mat4(1.0f);
-        objectModel = glm::translate(objectModel, cubePositions[i]);
-        objectModel = glm::rotate(objectModel, glm::radians(20.0f * static_cast<float>(i)), glm::vec3(1.0f, 0.3f, 0.5f));
-
-        objectShader.setValue("model", objectModel);
-
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-    }
+    objectShader.setValue("model", glm::mat4(1.0f));
 
     //
 
@@ -177,6 +166,10 @@ static void render() {
     glDeleteVertexArrays(1, &objectVao);
     glDeleteVertexArrays(1, &lightVao);
     glDeleteBuffers(1, &vbo);
+
+    //
+
+    gModel->draw(objectShader);
 }
 
 static void renderLoop(SDL_Window* window) {
@@ -207,6 +200,8 @@ static void renderLoop(SDL_Window* window) {
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, specularSurface->w, specularSurface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, specularSurface->pixels);
     SDL_FreeSurface(specularSurface);
     glGenerateMipmap(GL_TEXTURE_2D);
+
+    gModel = new Model("/home/admin/Downloads/backpack/backpack.obj");
 
     while (true) {
         SDL_GL_GetDrawableSize(window, &width, &height);
@@ -266,6 +261,8 @@ static void renderLoop(SDL_Window* window) {
 
     glDeleteTextures(1, &gDiffuseTexture);
     glDeleteTextures(1, &gSpecularTexture);
+
+    delete gModel;
 }
 
 int main() {

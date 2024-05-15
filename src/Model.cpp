@@ -67,7 +67,7 @@ Mesh* Model::processMesh(aiMesh* mesh, const aiScene* scene) {
 
     for (int i = 0; i < (int) mesh->mNumFaces; i++) {
         const aiFace face = mesh->mFaces[i];
-        for (int j = 0; j < (int) face.mNumIndices; i++)
+        for (int j = 0; j < (int) face.mNumIndices; j++)
             indices.push_back(face.mIndices[j]);
     }
 
