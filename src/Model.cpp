@@ -47,7 +47,7 @@ void Model::processNode(aiNode* node, const aiScene* scene) {
     for (int i = 0; i < (int) node->mNumMeshes; i++)
         mMeshes.push_back(processMesh(scene->mMeshes[node->mMeshes[i]], scene));
 
-    for(int i = 0; i < (int) node->mNumChildren; i++)
+    for (int i = 0; i < (int) node->mNumChildren; i++)
         processNode(node->mChildren[i], scene);
 }
 
@@ -56,7 +56,7 @@ Mesh* Model::processMesh(aiMesh* mesh, const aiScene* scene) {
     std::vector<unsigned> indices;
     std::vector<Texture> textures;
 
-    for(int i = 0; i < (int) mesh->mNumVertices; i++)
+    for (int i = 0; i < (int) mesh->mNumVertices; i++)
         vertices.push_back(Vertex{
             glm::vec3(mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z),
             glm::vec3(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z),
@@ -87,15 +87,27 @@ Mesh* Model::processMesh(aiMesh* mesh, const aiScene* scene) {
 std::vector<Texture> Model::loadMaterialTextures(const aiMaterial* mat, aiTextureType type, const std::string& typeName) {
     std::vector<Texture> textures;
 
-    for(int i = 0; i < (int) mat->GetTextureCount(type); i++) {
+    for (int i = 0; i < (int) mat->GetTextureCount(type); i++) {
         aiString str;
         mat->GetTexture(type, i, &str);
 
-        Texture texture;
-        texture.id = textureFromFile(str.C_Str(), mDirectory);
-        texture.type = typeName;
-        texture.path = str.C_Str();
-        textures.push_back(std::move(texture));
+        bool skip = false;
+        for (auto& texture : mLoadedTextures) {
+            if (std::strcmp(texture.path.c_str(), str.C_Str()) == 0) {
+                textures.push_back(texture);
+                skip = true;
+                break;
+            }
+        }
+
+        if (!skip) {
+            Texture texture;
+            texture.id = textureFromFile(str.C_Str(), mDirectory);
+            texture.type = typeName;
+            texture.path = str.C_Str();
+            textures.push_back(texture);
+            mLoadedTextures.push_back(texture);
+        }
     }
 
     return textures;

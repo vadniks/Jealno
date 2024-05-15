@@ -28,6 +28,7 @@ class Model {
 private:
     std::vector<Mesh*> mMeshes;
     std::string mDirectory;
+    std::vector<Texture> mLoadedTextures;
 public:
     explicit Model(const std::string& path);
     Model(const Model&) = delete;
