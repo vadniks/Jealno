@@ -103,12 +103,9 @@ static void render() {
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), reinterpret_cast<void*>(6 * sizeof(float)));
     glEnableVertexAttribArray(2);
 
-    const int pointLights = 4;
+    const int pointLights = 1;
     glm::vec3 pointLightPositions[pointLights] = {
-        glm::vec3( 0.7f, 0.2f, 2.0f),
-        glm::vec3( 2.3f, -3.3f, -4.0f),
-        glm::vec3(-4.0f, 2.0f, -12.0f),
-        glm::vec3( 0.0f, 0.0f, -3.0f)
+        glm::vec3(1.0f, 1.0f, 1.0f)
     };
 
     CompoundShader objectShader("shaders/objectVertex.glsl", "shaders/objectFragment.glsl");
@@ -135,18 +132,9 @@ static void render() {
         objectShader.setValue(std::string("pointLights[").append(std::to_string(i)).append("].specular"), glm::vec3(0.7f, 0.7f, 0.7f));
     }
 
-    const int cubes = 10;
+    const int cubes = 1;
     glm::vec3 cubePositions[cubes] = {
-        glm::vec3( 0.0f, 0.0f, 0.0f),
-        glm::vec3( 2.0f, 5.0f, -15.0f),
-        glm::vec3(-1.5f, -2.2f, -2.5f),
-        glm::vec3(-3.8f, -2.0f, -12.3f),
-        glm::vec3( 2.4f, -0.4f, -3.5f),
-        glm::vec3(-1.7f, 3.0f, -7.5f),
-        glm::vec3( 1.3f, -2.0f, -2.5f),
-        glm::vec3( 1.5f, 2.0f, -2.5f),
-        glm::vec3( 1.5f, 0.2f, -1.5f),
-        glm::vec3(-1.3f, 1.0f, -1.5f)
+        glm::vec3(-1.0f, -1.0f, -1.0f)
     };
 
     for (int i = 0; i < cubes; i++) {
