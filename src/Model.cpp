@@ -20,6 +20,7 @@
 #include <cassert>
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
+#include <SDL2/SDL_image.h>
 
 Model::Model(const std::string& path) {
     Assimp::Importer importer;
@@ -101,5 +102,31 @@ std::vector<Texture> Model::loadMaterialTextures(const aiMaterial* mat, aiTextur
 }
 
 unsigned Model::textureFromFile(const std::string& path, const std::string& directory) {
+    std::string filename = directory + '/' + path;
 
+    int format;
+    if (filename.ends_with(".png"))
+        format = GL_RGBA;
+    else if (filename.ends_with(".jpg"))
+        format = GL_RGB;
+    else
+        assert(false);
+
+    SDL_Surface* surface = IMG_Load(filename.c_str());
+    assert(surface != nullptr);
+
+    unsigned texture;
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glTexImage2D(GL_TEXTURE_2D, 0, format, surface->w, surface->h, 0, format, GL_UNSIGNED_BYTE, surface->pixels);
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    SDL_FreeSurface(surface);
+
+    return texture;
 }

@@ -56,6 +56,9 @@ Mesh::Mesh(
 }
 
 Mesh::~Mesh() {
+    for (const auto& i : mTextures)
+        glDeleteTextures(1, &(i.id));
+
     glDeleteVertexArrays(1, &mVao);
     glDeleteBuffers(1, &mVbo);
     glDeleteBuffers(1, &mEbo);
