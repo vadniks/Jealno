@@ -39,8 +39,10 @@ Model::~Model() {
 }
 
 void Model::draw(CompoundShader& shader) {
+//    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     for (auto mesh : mMeshes)
         mesh->draw(shader);
+//    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
 void Model::processNode(aiNode* node, const aiScene* scene) {

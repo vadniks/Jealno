@@ -110,7 +110,9 @@ static void render() {
         objectShader.setValue(std::string("pointLights[").append(std::to_string(i)).append("].specular"), glm::vec3(0.7f, 0.7f, 0.7f));
     }
 
-    objectShader.setValue("model", glm::mat4(1.0f));
+    auto objectModel = glm::mat4(1.0f);
+    objectModel = glm::rotate(objectModel, glm::radians((float) SDL_GetTicks() / 100.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    objectShader.setValue("model", objectModel);
 
     //
 
