@@ -25,7 +25,7 @@
 Model::Model(const std::string& path) {
     Assimp::Importer importer;
 
-    const aiScene* scene = importer.ReadFile(path.c_str(), aiProcess_Triangulate | aiProcess_FlipUVs);
+    const aiScene* scene = importer.ReadFile(path.c_str(), aiProcess_Triangulate);
     assert(scene != nullptr && !(scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) && scene->mRootNode != nullptr);
 
     mDirectory = path.substr(0, path.find_last_of('/'));
