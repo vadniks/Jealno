@@ -150,11 +150,11 @@ static void render() {
     glm::mat4 view = gCamera.viewMatrix();
     glm::mat4 projection = glm::perspective(glm::radians(gCamera.zoom()), (float) gWidth / (float) gHeight, 0.1f, 100.0f);
 
-    glStencilMask(0x00);
-
     gShader->use();
     gShader->setValue("view", view);
     gShader->setValue("projection", projection);
+
+    glStencilMask(0x00);
 
     glBindVertexArray(gPlaneVao);
     glBindTexture(GL_TEXTURE_2D, gPlaneTexture);
@@ -185,6 +185,9 @@ static void render() {
     glDisable(GL_DEPTH_TEST);
 
     gOutlineShader->use();
+    gOutlineShader->setValue("view", view);
+    gOutlineShader->setValue("projection", projection);
+
     glBindVertexArray(gCubeVao);
     glBindTexture(GL_TEXTURE_2D, gCubeTexture);
     const float scale = 1.1f;
@@ -192,7 +195,7 @@ static void render() {
     model = glm::translate(model, glm::vec3(-1.0f, 0.0f, -1.0f));
     model = glm::scale(model, glm::vec3(scale, scale, scale));
     gOutlineShader->setValue("model", model);
-    glDrawArrays(GL_TRIANGLES, 1, 36);
+    glDrawArrays(GL_TRIANGLES, 0, 36);
 
     model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
@@ -202,7 +205,7 @@ static void render() {
     glBindVertexArray(0);
 
     glStencilMask(0xFF);
-    glStencilFunc(GL_ALWAYS, 1, 0xFF);
+    glStencilFunc(GL_ALWAYS, 0, 0xFF);
     glEnable(GL_DEPTH_TEST);
 }
 
@@ -274,7 +277,6 @@ static void renderLoop(SDL_Window* window) {
 
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-        glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 
         render();
 
@@ -318,6 +320,9 @@ int main() {
     glEnable(GL_BLEND);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_STENCIL_TEST);
+
+    glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+    glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
