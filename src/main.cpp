@@ -30,130 +30,15 @@
 
 static int gWidth = 0, gHeight = 0;
 static Camera gCamera(glm::vec3(0.0f, 0.0f, 7.5f));
-static Model* gModel = nullptr;
 
 static void render() {
-    auto view = gCamera.viewMatrix();
-    glm::mat4 projection = glm::perspective(glm::radians(gCamera.zoom()), static_cast<float>(gWidth) / static_cast<float>(gHeight), 0.1f, 100.0f);
 
-    float vertices[] = {
-        -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f,
-        0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f,
-        0.5f, 0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 1.0f, 1.0f,
-        0.5f, 0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 1.0f, 1.0f,
-        -0.5f, 0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f,
-        -0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-        0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f,
-        0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,
-        0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,
-        -0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,
-        -0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-        -0.5f, 0.5f, 0.5f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-        -0.5f, 0.5f, -0.5f, -1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f,
-        -0.5f, -0.5f, 0.5f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-        -0.5f, 0.5f, 0.5f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-        0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-        0.5f, 0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
-        0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f,
-        0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f,
-        0.5f, -0.5f, 0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-        0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-        -0.5f, -0.5f, -0.5f, 0.0f, -1.0f, 0.0f, 0.0f, 1.0f,
-        0.5f, -0.5f, -0.5f, 0.0f, -1.0f, 0.0f, 1.0f, 1.0f,
-        0.5f, -0.5f, 0.5f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f,
-        0.5f, -0.5f, 0.5f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f,
-        -0.5f, -0.5f, 0.5f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f,
-        -0.5f, -0.5f, -0.5f, 0.0f, -1.0f, 0.0f, 0.0f, 1.0f,
-        -0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-        0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f,
-        0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-        0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-        -0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
-        -0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f
-    };
-
-    unsigned vbo;
-    glGenBuffers(1, &vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    const int pointLights = 1;
-    glm::vec3 pointLightPositions[pointLights] = {
-        glm::vec3(1.0f, 5.0f, 5.0f)
-    };
-
-    CompoundShader objectShader("shaders/objectVertex.glsl", "shaders/objectFragment.glsl");
-
-    objectShader.use();
-    objectShader.setValue("view", view);
-    objectShader.setValue("projection", projection);
-    objectShader.setValue("viewPos", gCamera.position());
-    objectShader.setValue("material.diffuse", 0);
-    objectShader.setValue("material.specular", 1);
-    objectShader.setValue("material.shininess", 32.0f);
-    objectShader.setValue("dirLight.direction", glm::vec3(-0.2f, -1.0f, -0.3f));
-    objectShader.setValue("dirLight.ambient", glm::vec3(0.1f, 0.1f, 0.1f));
-    objectShader.setValue("dirLight.diffuse", glm::vec3(0.3f, 0.3f, 0.3f));
-    objectShader.setValue("dirLight.specular", glm::vec3(0.7f, 0.7f, 0.7f));
-
-    for (int i = 0; i < pointLights; i++) {
-        objectShader.setValue(std::string("pointLights[").append(std::to_string(i)).append("].position"), pointLightPositions[i]);
-        objectShader.setValue(std::string("pointLights[").append(std::to_string(i)).append("].constant"), glm::vec3(0.1f, 0.1f, 0.1f));
-        objectShader.setValue(std::string("pointLights[").append(std::to_string(i)).append("].linear"), 0.045f);
-        objectShader.setValue(std::string("pointLights[").append(std::to_string(i)).append("].quadratic"), 0.0075f);
-        objectShader.setValue(std::string("pointLights[").append(std::to_string(i)).append("].ambient"), glm::vec3(0.1f, 0.1f, 0.1f));
-        objectShader.setValue(std::string("pointLights[").append(std::to_string(i)).append("].diffuse"), glm::vec3(0.3f, 0.3f, 0.3f));
-        objectShader.setValue(std::string("pointLights[").append(std::to_string(i)).append("].specular"), glm::vec3(0.7f, 0.7f, 0.7f));
-    }
-
-    auto objectModel = glm::mat4(1.0f);
-    objectModel = glm::rotate(objectModel, glm::radians((float) SDL_GetTicks() / 100.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    objectShader.setValue("model", objectModel);
-
-    //
-
-    unsigned lightVao;
-    glGenVertexArrays(1, &lightVao);
-    glBindVertexArray(lightVao);
-
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), reinterpret_cast<void*>(0));
-    glEnableVertexAttribArray(0);
-
-    CompoundShader lightShader("shaders/lightVertex.glsl", "shaders/lightFragment.glsl");
-    lightShader.use();
-    lightShader.setValue("view", view);
-    lightShader.setValue("projection", projection);
-
-    for (int i = 0; i < pointLights; i++) {
-        auto lightModel = glm::mat4(1.0f);
-        lightModel = glm::translate(lightModel, pointLightPositions[i]);
-        lightModel = glm::scale(lightModel, glm::vec3(0.2f));
-        lightShader.setValue("model", lightModel);
-
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-    }
-
-    //
-
-    glDeleteVertexArrays(1, &lightVao);
-    glDeleteBuffers(1, &vbo);
-
-    //
-
-    gModel->draw(objectShader);
 }
 
 static void renderLoop(SDL_Window* window) {
     int width, height;
     SDL_Event event;
     bool mousePressed;
-
-    gModel = new Model("/home/admin/Downloads/backpack/backpack.obj");
 
     while (true) {
         SDL_GL_GetDrawableSize(window, &width, &height);
@@ -210,8 +95,6 @@ static void renderLoop(SDL_Window* window) {
         SDL_GL_SwapWindow(window);
     }
     end:
-
-    delete gModel;
 }
 
 int main() {
