@@ -281,7 +281,6 @@ int main() {
     glEnable(GL_BLEND);
     glEnable(GL_DEPTH_TEST);
 
-    glDepthFunc(GL_ALWAYS);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     SDL_GL_SetSwapInterval(1);
