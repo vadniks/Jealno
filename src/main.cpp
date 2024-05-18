@@ -34,21 +34,19 @@ static unsigned gCubeVao, gCubeVbo, gCubeTexture, gPlaneVao, gPlaneVbo, gPlaneTe
 static CompoundShader* gShader = nullptr;
 
 static unsigned loadTexture(std::string&& path) {
-    int format;
-    if (path.ends_with(".png"))
-        format = GL_RGBA;
-    else if (path.ends_with(".jpg"))
-        format = GL_RGB;
-    else
+    if (!path.ends_with(".png") && !path.ends_with(".jpg"))
         assert(false);
 
     unsigned id;
     glGenTextures(1, &id);
 
-    SDL_Surface* surface = IMG_Load(path.c_str());
-    assert(surface != nullptr);
+    SDL_Surface* xSurface = IMG_Load(path.c_str());
+    assert(xSurface != nullptr);
+    SDL_Surface* surface = SDL_ConvertSurfaceFormat(xSurface, SDL_PIXELFORMAT_RGBA32, 0);
+    SDL_FreeSurface(xSurface);
+
     glBindTexture(GL_TEXTURE_2D, id);
-    glTexImage2D(GL_TEXTURE_2D, 0, format, surface->w, surface->h, 0, format, GL_UNSIGNED_BYTE, surface->pixels);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, surface->w, surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, surface->pixels);
     glGenerateMipmap(GL_TEXTURE_2D);
     SDL_FreeSurface(surface);
 
