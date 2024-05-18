@@ -32,6 +32,7 @@ static int gWidth = 0, gHeight = 0;
 static Camera gCamera(glm::vec3(0.0f, 0.0f, 7.5f));
 static unsigned gCubeVao, gCubeVbo, gCubeTexture, gPlaneVao, gPlaneVbo, gPlaneTexture;
 static CompoundShader* gShader = nullptr;
+static CompoundShader* gOutlineShader = nullptr;
 
 static unsigned loadTexture(std::string&& path) {
     if (!path.ends_with(".png") && !path.ends_with(".jpg"))
@@ -141,15 +142,29 @@ static void init() {
     gShader = new CompoundShader("shaders/vertex.glsl", "shaders/fragment.glsl");
     gShader->use();
     gShader->setValue("texture0", 0);
+
+    gOutlineShader = new CompoundShader("shaders/vertex.glsl", "shaders/outlineFragment.glsl");
 }
 
 static void render() {
     glm::mat4 view = gCamera.viewMatrix();
     glm::mat4 projection = glm::perspective(glm::radians(gCamera.zoom()), (float) gWidth / (float) gHeight, 0.1f, 100.0f);
 
+    glStencilMask(0x00);
+
     gShader->use();
     gShader->setValue("view", view);
     gShader->setValue("projection", projection);
+
+    glBindVertexArray(gPlaneVao);
+    glBindTexture(GL_TEXTURE_2D, gPlaneTexture);
+    gShader->use();
+    gShader->setValue("model", glm::mat4(1.0f));
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glBindVertexArray(0);
+
+    glStencilFunc(GL_ALWAYS, 1, 0xFF);
+    glStencilMask(0xFF);
 
     glBindVertexArray(gCubeVao);
     glActiveTexture(GL_TEXTURE0);
@@ -165,15 +180,35 @@ static void render() {
     gShader->setValue("model", model);
     glDrawArrays(GL_TRIANGLES, 0, 36);
 
-    glBindVertexArray(gPlaneVao);
-    glBindTexture(GL_TEXTURE_2D, gPlaneTexture);
-    gShader->setValue("model", glm::mat4(1.0f));
-    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+    glStencilMask(0x00);
+    glDisable(GL_DEPTH_TEST);
+
+    gOutlineShader->use();
+    glBindVertexArray(gCubeVao);
+    glBindTexture(GL_TEXTURE_2D, gCubeTexture);
+    const float scale = 1.1f;
+    model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(-1.0f, 0.0f, -1.0f));
+    model = glm::scale(model, glm::vec3(scale, scale, scale));
+    gOutlineShader->setValue("model", model);
+    glDrawArrays(GL_TRIANGLES, 1, 36);
+
+    model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
+    model = glm::scale(model, glm::vec3(scale, scale, scale));
+    gOutlineShader->setValue("model", model);
+    glDrawArrays(GL_TRIANGLES, 0, 36);
     glBindVertexArray(0);
+
+    glStencilMask(0xFF);
+    glStencilFunc(GL_ALWAYS, 1, 0xFF);
+    glEnable(GL_DEPTH_TEST);
 }
 
 static void clean() {
     delete gShader;
+    delete gOutlineShader;
     glDeleteVertexArrays(1, &gCubeVao);
     glDeleteBuffers(1, &gCubeVbo);
     glDeleteTextures(1, &gCubeTexture);
@@ -185,7 +220,7 @@ static void clean() {
 static void renderLoop(SDL_Window* window) {
     int width, height;
     SDL_Event event;
-    bool mousePressed;
+    bool mousePressed = false;
 
     init();
 
@@ -238,7 +273,9 @@ static void renderLoop(SDL_Window* window) {
         }
 
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+        glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+
         render();
 
         SDL_GL_SwapWindow(window);
@@ -280,6 +317,7 @@ int main() {
     glEnable(GL_MULTISAMPLE);
     glEnable(GL_BLEND);
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_STENCIL_TEST);
 
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
