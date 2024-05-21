@@ -33,7 +33,7 @@ static Camera gCamera(glm::vec3(0.0f, 0.0f, 7.5f));
 static unsigned gCubeVao, gCubeVbo, gCubeTexture, gPlaneVao, gPlaneVbo, gPlaneTexture, gGrassVao, gGrassVbo, gGrassTexture;
 static CompoundShader* gShader = nullptr;
 
-static unsigned loadTexture(std::string&& path) {
+static unsigned loadTexture(std::string&& path, bool clampToEdge) {
     if (!path.ends_with(".png") && !path.ends_with(".jpg"))
         assert(false);
 
@@ -50,8 +50,8 @@ static unsigned loadTexture(std::string&& path) {
     glGenerateMipmap(GL_TEXTURE_2D);
     SDL_FreeSurface(surface);
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, clampToEdge ? GL_CLAMP_TO_EDGE : GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, clampToEdge ? GL_CLAMP_TO_EDGE : GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
@@ -154,9 +154,9 @@ static void init() {
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), reinterpret_cast<void*>(3 * sizeof(float)));
     glBindVertexArray(0);
 
-    gCubeTexture = loadTexture("res/marble.jpg");
-    gPlaneTexture = loadTexture("res/metal.png");
-    gGrassTexture = loadTexture("res/grass.png");
+    gCubeTexture = loadTexture("res/marble.jpg", false);
+    gPlaneTexture = loadTexture("res/metal.png", false);
+    gGrassTexture = loadTexture("res/grass.png", true);
 
     gShader = new CompoundShader("shaders/vertex.glsl", "shaders/fragment.glsl");
     gShader->use();
