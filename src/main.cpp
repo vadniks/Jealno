@@ -32,7 +32,6 @@ static int gWidth = 0, gHeight = 0;
 static Camera gCamera(glm::vec3(0.0f, 0.0f, 7.5f));
 static unsigned gCubeVao, gCubeVbo, gCubeTexture, gPlaneVao, gPlaneVbo, gPlaneTexture;
 static CompoundShader* gShader = nullptr;
-static CompoundShader* gOutlineShader = nullptr;
 
 static unsigned loadTexture(std::string&& path) {
     if (!path.ends_with(".png") && !path.ends_with(".jpg"))
@@ -142,8 +141,6 @@ static void init() {
     gShader = new CompoundShader("shaders/vertex.glsl", "shaders/fragment.glsl");
     gShader->use();
     gShader->setValue("texture0", 0);
-
-    gOutlineShader = new CompoundShader("shaders/vertex.glsl", "shaders/outlineFragment.glsl");
 }
 
 static void render() {
@@ -154,17 +151,12 @@ static void render() {
     gShader->setValue("view", view);
     gShader->setValue("projection", projection);
 
-    glStencilMask(0x00);
-
     glBindVertexArray(gPlaneVao);
     glBindTexture(GL_TEXTURE_2D, gPlaneTexture);
     gShader->use();
     gShader->setValue("model", glm::mat4(1.0f));
     glDrawArrays(GL_TRIANGLES, 0, 6);
     glBindVertexArray(0);
-
-    glStencilFunc(GL_ALWAYS, 1, 0xFF);
-    glStencilMask(0xFF);
 
     glBindVertexArray(gCubeVao);
     glActiveTexture(GL_TEXTURE0);
@@ -179,39 +171,10 @@ static void render() {
     model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
     gShader->setValue("model", model);
     glDrawArrays(GL_TRIANGLES, 0, 36);
-
-    glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
-    glStencilMask(0x00);
-    glDisable(GL_DEPTH_TEST);
-
-    gOutlineShader->use();
-    gOutlineShader->setValue("view", view);
-    gOutlineShader->setValue("projection", projection);
-
-    glBindVertexArray(gCubeVao);
-    glBindTexture(GL_TEXTURE_2D, gCubeTexture);
-    const float scale = 1.1f;
-    model = glm::mat4(1.0f);
-    model = glm::translate(model, glm::vec3(-1.0f, 0.0f, -1.0f));
-    model = glm::scale(model, glm::vec3(scale, scale, scale));
-    gOutlineShader->setValue("model", model);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
-
-    model = glm::mat4(1.0f);
-    model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
-    model = glm::scale(model, glm::vec3(scale, scale, scale));
-    gOutlineShader->setValue("model", model);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
-    glBindVertexArray(0);
-
-    glStencilMask(0xFF);
-    glStencilFunc(GL_ALWAYS, 0, 0xFF);
-    glEnable(GL_DEPTH_TEST);
 }
 
 static void clean() {
     delete gShader;
-    delete gOutlineShader;
     glDeleteVertexArrays(1, &gCubeVao);
     glDeleteBuffers(1, &gCubeVbo);
     glDeleteTextures(1, &gCubeTexture);
@@ -301,7 +264,6 @@ int main() {
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
     SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4);
-    SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
     SDL_Window* window = SDL_CreateWindow(
         "Jealno",
@@ -320,10 +282,6 @@ int main() {
     glEnable(GL_MULTISAMPLE);
     glEnable(GL_BLEND);
     glEnable(GL_DEPTH_TEST);
-    glEnable(GL_STENCIL_TEST);
-
-    glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
-    glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
