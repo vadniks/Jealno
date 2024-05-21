@@ -165,12 +165,16 @@ static void render() {
     gShader->setValue("view", view);
     gShader->setValue("projection", projection);
 
+    glCullFace(GL_FRONT);
+
     glBindVertexArray(gPlaneVao);
     glBindTexture(GL_TEXTURE_2D, gPlaneTexture);
     gShader->use();
     gShader->setValue("model", glm::mat4(1.0f));
     glDrawArrays(GL_TRIANGLES, 0, 6);
     glBindVertexArray(0);
+
+    glCullFace(GL_BACK);
 
     glBindVertexArray(gCubeVao);
     glActiveTexture(GL_TEXTURE0);
