@@ -30,7 +30,7 @@
 
 static int gWidth = 0, gHeight = 0;
 static Camera gCamera(glm::vec3(0.0f, 0.0f, 7.5f));
-static unsigned gCubeVao, gCubeVbo, gCubeTexture, gPlaneVao, gPlaneVbo, gPlaneTexture;
+static unsigned gCubeVao, gCubeVbo, gCubeTexture, gPlaneVao, gPlaneVbo, gPlaneTexture, gGrassVao, gGrassVbo, gGrassTexture;
 static CompoundShader* gShader = nullptr;
 
 static unsigned loadTexture(std::string&& path) {
@@ -112,6 +112,14 @@ static void init() {
         -5.0f, -0.5f, -5.0f,  0.0f, 2.0f,
         5.0f, -0.5f, -5.0f,  2.0f, 2.0f
     };
+    float quadVertices[] = {
+        0.0f,  0.5f,  0.0f,  0.0f,  0.0f,
+        0.0f, -0.5f,  0.0f,  0.0f,  1.0f,
+        1.0f, -0.5f,  0.0f,  1.0f,  1.0f,
+        0.0f,  0.5f,  0.0f,  0.0f,  0.0f,
+        1.0f, -0.5f,  0.0f,  1.0f,  1.0f,
+        1.0f,  0.5f,  0.0f,  1.0f,  0.0f
+    };
 
     glGenVertexArrays(1, &gCubeVao);
     glGenBuffers(1, &gCubeVbo);
@@ -135,8 +143,20 @@ static void init() {
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), reinterpret_cast<void*>(3 * sizeof(float)));
     glBindVertexArray(0);
 
+    glGenVertexArrays(1, &gGrassVao);
+    glGenBuffers(1, &gGrassVbo);
+    glBindVertexArray(gGrassVao);
+    glBindBuffer(GL_ARRAY_BUFFER, gGrassVbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), quadVertices, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), reinterpret_cast<void*>(0));
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), reinterpret_cast<void*>(3 * sizeof(float)));
+    glBindVertexArray(0);
+
     gCubeTexture = loadTexture("res/marble.jpg");
     gPlaneTexture = loadTexture("res/metal.png");
+    gGrassTexture = loadTexture("res/grass.png");
 
     gShader = new CompoundShader("shaders/vertex.glsl", "shaders/fragment.glsl");
     gShader->use();
@@ -171,16 +191,40 @@ static void render() {
     model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
     gShader->setValue("model", model);
     glDrawArrays(GL_TRIANGLES, 0, 36);
+
+    const int vegetationSize = 5;
+    glm::vec3 vegetation[vegetationSize] = {
+        glm::vec3(-1.5f, 0.0f, -0.48f),
+        glm::vec3(1.5f, 0.0f, 0.51f),
+        glm::vec3(0.0f, 0.0f, 0.7f),
+        glm::vec3(-0.3f, 0.0f, -2.3f),
+        glm::vec3(0.5f, 0.0f, -0.6f)
+    };
+
+    glBindVertexArray(gGrassVao);
+    glBindTexture(GL_TEXTURE_2D, gGrassTexture);
+    for (unsigned int i = 0; i < vegetationSize; i++) {
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, vegetation[i]);
+        gShader->setValue("model", model);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+    }
 }
 
 static void clean() {
     delete gShader;
+
     glDeleteVertexArrays(1, &gCubeVao);
     glDeleteBuffers(1, &gCubeVbo);
     glDeleteTextures(1, &gCubeTexture);
+
     glDeleteVertexArrays(1, &gPlaneVao);
     glDeleteBuffers(1, &gPlaneVbo);
     glDeleteTextures(1, &gPlaneTexture);
+
+    glDeleteVertexArrays(1, &gGrassVao);
+    glDeleteBuffers(1, &gGrassVbo);
+    glDeleteTextures(1, &gGrassTexture);
 }
 
 static void renderLoop(SDL_Window* window) {
@@ -279,11 +323,11 @@ int main() {
     glewExperimental = GL_TRUE;
     assert(glewInit() == GLEW_OK);
 
-    glEnable(GL_MULTISAMPLE);
-    glEnable(GL_BLEND);
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_MULTISAMPLE);
+//    glEnable(GL_BLEND);
 
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+//    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     SDL_GL_SetSwapInterval(1);
 
