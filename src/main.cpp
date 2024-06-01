@@ -20,7 +20,6 @@
 #include "CompoundShader.hpp"
 #include <cassert>
 #include <string>
-#include <map>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
@@ -31,7 +30,7 @@
 
 static int gWidth = 0, gHeight = 0;
 static Camera gCamera(glm::vec3(0.0f, 0.0f, 7.5f));
-static unsigned gCubeVao, gCubeVbo, gCubeTexture, gPlaneVao, gPlaneVbo, gPlaneTexture, gTransparentVao, gTransparentVbo, gTransparentTexture;
+static unsigned gCubeVao, gCubeVbo, gCubeTexture, gPlaneVao, gPlaneVbo, gPlaneTexture;
 static CompoundShader* gShader = nullptr;
 
 static unsigned loadTexture(std::string&& path, bool clampToEdge) {
@@ -106,14 +105,6 @@ static void init() {
         -5.0f, -0.5f, -5.0f,  0.0f, 2.0f,
         5.0f, -0.5f, -5.0f,  2.0f, 2.0f
     };
-    float transparentVertices[] = {
-        0.0f,  0.5f,  0.0f,  0.0f,  0.0f,
-        0.0f, -0.5f,  0.0f,  0.0f,  1.0f,
-        1.0f, -0.5f,  0.0f,  1.0f,  1.0f,
-        0.0f,  0.5f,  0.0f,  0.0f,  0.0f,
-        1.0f, -0.5f,  0.0f,  1.0f,  1.0f,
-        1.0f,  0.5f,  0.0f,  1.0f,  0.0f
-    };
 
     glGenVertexArrays(1, &gCubeVao);
     glGenBuffers(1, &gCubeVbo);
@@ -137,20 +128,8 @@ static void init() {
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), reinterpret_cast<void*>(3 * sizeof(float)));
     glBindVertexArray(0);
 
-    glGenVertexArrays(1, &gTransparentVao);
-    glGenBuffers(1, &gTransparentVbo);
-    glBindVertexArray(gTransparentVao);
-    glBindBuffer(GL_ARRAY_BUFFER, gTransparentVbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(transparentVertices), transparentVertices, GL_STATIC_DRAW);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), reinterpret_cast<void*>(0));
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), reinterpret_cast<void*>(3 * sizeof(float)));
-    glBindVertexArray(0);
-
     gCubeTexture = loadTexture("res/marble.jpg", false);
     gPlaneTexture = loadTexture("res/metal.png", false);
-    gTransparentTexture = loadTexture("res/window.png", true);
 
     gShader = new CompoundShader("shaders/vertex.glsl", "shaders/fragment.glsl");
     gShader->use();
@@ -189,30 +168,6 @@ static void render() {
     model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
     gShader->setValue("model", model);
     glDrawArrays(GL_TRIANGLES, 0, 36);
-
-    const int windowsSize = 5;
-    glm::vec3 windows[windowsSize] = {
-        glm::vec3(-1.5f, 0.0f, -0.48f),
-        glm::vec3(1.5f, 0.0f, 0.51f),
-        glm::vec3(0.0f, 0.0f, 0.7f),
-        glm::vec3(-0.3f, 0.0f, -2.3f),
-        glm::vec3(0.5f, 0.0f, -0.6f)
-    };
-
-    std::map<float, glm::vec3> sorted;
-    for (unsigned int i = 0; i < windowsSize; i++) {
-        float distance = glm::length(gCamera.position() - windows[i]);
-        sorted[distance] = windows[i];
-    }
-
-    glBindVertexArray(gTransparentVao);
-    glBindTexture(GL_TEXTURE_2D, gTransparentTexture);
-    for (auto it = sorted.rbegin(); it != sorted.rend(); it++) {
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, it->second);
-        gShader->setValue("model", model);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-    }
 }
 
 static void clean() {
@@ -225,10 +180,6 @@ static void clean() {
     glDeleteVertexArrays(1, &gPlaneVao);
     glDeleteBuffers(1, &gPlaneVbo);
     glDeleteTextures(1, &gPlaneTexture);
-
-    glDeleteVertexArrays(1, &gTransparentVao);
-    glDeleteBuffers(1, &gTransparentVbo);
-    glDeleteTextures(1, &gTransparentTexture);
 }
 
 static void renderLoop(SDL_Window* window) {
