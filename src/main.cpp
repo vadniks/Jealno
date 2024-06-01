@@ -30,8 +30,9 @@
 
 static int gWidth = 0, gHeight = 0;
 static Camera gCamera(glm::vec3(0.0f, 0.0f, 7.5f));
-static unsigned gCubeVao, gCubeVbo, gCubeTexture, gPlaneVao, gPlaneVbo, gPlaneTexture;
+static unsigned gCubeVao, gCubeVbo, gCubeTexture, gPlaneVao, gPlaneVbo, gPlaneTexture, gFbo, gFramebufferTexture, gRbo, gQuadVao, gQuadVbo;
 static CompoundShader* gShader = nullptr;
+static CompoundShader* gScreenShader = nullptr;
 
 static unsigned loadTexture(std::string&& path, bool clampToEdge) {
     if (!path.ends_with(".png") && !path.ends_with(".jpg"))
@@ -134,6 +135,51 @@ static void init() {
     gShader = new CompoundShader("shaders/vertex.glsl", "shaders/fragment.glsl");
     gShader->use();
     gShader->setValue("texture0", 0);
+
+    glGenFramebuffers(1, &gFbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, gFbo);
+
+    glGenTextures(1, &gFramebufferTexture);
+    glBindTexture(GL_TEXTURE_2D, gFramebufferTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, gWidth, gHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, gFramebufferTexture, 0);
+
+    glGenRenderbuffers(1, &gRbo);
+    glBindRenderbuffer(GL_RENDERBUFFER, gRbo);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, gWidth, gHeight);
+    glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, gRbo);
+
+    assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    float quadVertices[] = {
+        -1.0f, 1.0f, 0.0f, 1.0f,
+        -1.0f, -1.0f, 0.0f, 0.0f,
+        1.0f, -1.0f, 1.0f, 0.0f,
+        -1.0f, 1.0f, 0.0f, 1.0f,
+        1.0f, -1.0f, 1.0f, 0.0f,
+        1.0f, 1.0f, 1.0f, 1.0f
+    };
+
+    glGenVertexArrays(1, &gQuadVao);
+    glGenBuffers(1, &gQuadVbo);
+    glBindVertexArray(gQuadVao);
+    glBindBuffer(GL_ARRAY_BUFFER, gQuadVbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), reinterpret_cast<void*>(0));
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), reinterpret_cast<void*>(2 * sizeof(float)));
+
+    gScreenShader = new CompoundShader("shaders/quadVertex.glsl", "shaders/quadFragment.glsl");
+    gScreenShader->use();
+    gScreenShader->setValue("screenTexture", 0);
 }
 
 static void render() {
@@ -180,6 +226,15 @@ static void clean() {
     glDeleteVertexArrays(1, &gPlaneVao);
     glDeleteBuffers(1, &gPlaneVbo);
     glDeleteTextures(1, &gPlaneTexture);
+
+    glDeleteFramebuffers(1, &gFbo);
+    glDeleteTextures(1, &gFramebufferTexture);
+    glDeleteRenderbuffers(1, &gRbo);
+
+    glDeleteVertexArrays(1, &gQuadVao);
+    glDeleteBuffers(1, &gQuadVbo);
+
+    delete gScreenShader;
 }
 
 static void renderLoop(SDL_Window* window) {
@@ -237,10 +292,24 @@ static void renderLoop(SDL_Window* window) {
             }
         }
 
+        glBindFramebuffer(GL_FRAMEBUFFER, gFbo);
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-
+        glEnable(GL_DEPTH_TEST);
         render();
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+        gScreenShader->use();
+        glBindVertexArray(gQuadVao);
+        glDisable(GL_DEPTH_TEST);
+        glBindTexture(GL_TEXTURE_2D, gFramebufferTexture);
+
+//        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+//        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
         SDL_GL_SwapWindow(window);
     }
