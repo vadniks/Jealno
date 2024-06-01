@@ -295,7 +295,6 @@ static void renderLoop(SDL_Window* window) {
         glBindFramebuffer(GL_FRAMEBUFFER, gFbo);
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-        glEnable(GL_DEPTH_TEST);
         render();
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -304,7 +303,6 @@ static void renderLoop(SDL_Window* window) {
 
         gScreenShader->use();
         glBindVertexArray(gQuadVao);
-        glDisable(GL_DEPTH_TEST);
         glBindTexture(GL_TEXTURE_2D, gFramebufferTexture);
 
 //        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
