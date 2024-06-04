@@ -30,7 +30,7 @@
 
 static int gWidth = 0, gHeight = 0;
 static Camera gCamera(glm::vec3(0.0f, 0.0f, 7.5f));
-static unsigned gQuadVao, gQuadVbo;
+static unsigned gQuadVao, gQuadVbo, gInstanceVbo;
 static CompoundShader* gShader = nullptr;
 
 static void init() {
@@ -69,6 +69,14 @@ static void init() {
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), reinterpret_cast<void*>(0));
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), reinterpret_cast<void*>(2 * sizeof(float)));
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), reinterpret_cast<void*>(0));
+
+    glGenBuffers(1, &gInstanceVbo);
+    glBindBuffer(GL_ARRAY_BUFFER, gInstanceVbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * 100, translations, GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glVertexAttribDivisor(2, 1);
 }
 
 static void render() {
@@ -84,6 +92,8 @@ static void clean() {
 
     glDeleteVertexArrays(1, &gQuadVao);
     glDeleteBuffers(1, &gQuadVbo);
+
+//    glDeleteBuffers(1, &gInstanceVbo);
 }
 
 static void renderLoop(SDL_Window* window) {
