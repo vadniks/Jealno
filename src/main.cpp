@@ -30,70 +30,23 @@
 
 static int gWidth = 0, gHeight = 0;
 static Camera gCamera(glm::vec3(0.0f, 0.0f, 7.5f));
-static unsigned gQuadVao, gQuadVbo, gInstanceVbo;
+//static unsigned ;
 static CompoundShader* gShader = nullptr;
 
 static void init() {
-    glm::vec2 translations[100];
-    int index = 0;
-    float offset = 0.1f;
-    for (int y = -10; y < 10; y += 2) {
-        for (int x = -10; x < 10; x += 2) {
-            glm::vec2 translation;
-            translation.x = static_cast<float>(x) / 10.0f + offset;
-            translation.y = static_cast<float>(y) / 10.0f + offset;
-            translations[index++] = translation;
-        }
-    }
-
     gShader = new CompoundShader("shaders/vertex.glsl", "shaders/fragment.glsl");
     gShader->use();
-    for (int i = 0; i < 100; i++)
-        gShader->setValue("offsets[" + std::to_string(i) + ']', translations[i]);
 
-    float quadVertices[] = {
-        -0.05f,  0.05f, 1.0f, 0.0f, 0.0f,
-        0.05f, -0.05f, 0.0f, 1.0f, 0.0f,
-        -0.05f, -0.05f, 0.0f, 0.0f, 1.0f,
-        -0.05f,  0.05f, 1.0f, 0.0f, 0.0f,
-        0.05f, -0.05f, 0.0f, 1.0f, 0.0f,
-        0.05f,  0.05f, 0.0f, 1.0f, 1.0f
-    };
-
-    glGenVertexArrays(1, &gQuadVao);
-    glGenBuffers(1, &gQuadVbo);
-    glBindVertexArray(gQuadVao);
-    glBindBuffer(GL_ARRAY_BUFFER, gQuadVbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), quadVertices, GL_STATIC_DRAW);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), reinterpret_cast<void*>(0));
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), reinterpret_cast<void*>(2 * sizeof(float)));
-    glEnableVertexAttribArray(2);
-
-    glGenBuffers(1, &gInstanceVbo);
-    glBindBuffer(GL_ARRAY_BUFFER, gInstanceVbo);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), reinterpret_cast<void*>(0));
-    glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * 100, translations, GL_STATIC_DRAW);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glVertexAttribDivisor(2, 1);
 }
 
 static void render() {
     gShader->use();
 
-    glBindVertexArray(gQuadVao);
-    glDrawArraysInstanced(GL_TRIANGLES, 0, 6, 100);
-    glBindVertexArray(0);
 }
 
 static void clean() {
     delete gShader;
 
-    glDeleteVertexArrays(1, &gQuadVao);
-    glDeleteBuffers(1, &gQuadVbo);
-
-    glDeleteBuffers(1, &gInstanceVbo);
 }
 
 static void renderLoop(SDL_Window* window) {
