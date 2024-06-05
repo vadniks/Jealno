@@ -37,8 +37,9 @@ static const int AMOUNT = 1000;
 static int gWidth = 0, gHeight = 0;
 static Camera gCamera(glm::vec3(0.0f, 0.0f, 7.5f));
 static glm::mat4 gModelMatrices[AMOUNT];
-static CompoundShader* gShader = nullptr;
+static CompoundShader* gShader = nullptr, * gInstanceShader = nullptr;
 static Model* gRockModel = nullptr, * gPlanetModel = nullptr;
+static unsigned gInstanceVbo = 0;
 
 static void init() {
     srand(SDL_GetTicks());
@@ -68,8 +69,34 @@ static void init() {
     }
 
     gShader = new CompoundShader("shaders/vertex.glsl", "shaders/fragment.glsl");
+    gInstanceShader = new CompoundShader("shaders/instanceVertex.glsl", "shaders/fragment.glsl");
     gRockModel = new Model("/home/admin/Downloads/rock/rock.obj");
     gPlanetModel = new Model("/home/admin/Downloads/planet/planet.obj");
+
+    glGenBuffers(1, &gInstanceVbo);
+    glBindBuffer(GL_ARRAY_BUFFER, gInstanceVbo);
+    glBufferData(GL_ARRAY_BUFFER, AMOUNT * sizeof(glm::mat4), gModelMatrices, GL_STATIC_DRAW);
+
+    for (int i = 0; i < static_cast<int>(gRockModel->meshes().size()); i++) {
+        glBindVertexArray(gRockModel->meshes()[i]->vao());
+
+        const auto vec4Size = sizeof(glm::vec4);
+        glEnableVertexAttribArray(3);
+        glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, 4 * vec4Size, reinterpret_cast<void*>(0 * vec4Size));
+        glEnableVertexAttribArray(4);
+        glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, 4 * vec4Size, reinterpret_cast<void*>(1 * vec4Size));
+        glEnableVertexAttribArray(5);
+        glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, 4 * vec4Size, reinterpret_cast<void*>(2 * vec4Size));
+        glEnableVertexAttribArray(6);
+        glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, 4 * vec4Size, reinterpret_cast<void*>(3 * vec4Size));
+
+        glVertexAttribDivisor(3, 1);
+        glVertexAttribDivisor(4, 1);
+        glVertexAttribDivisor(5, 1);
+        glVertexAttribDivisor(6, 1);
+
+        glBindVertexArray(0);
+    }
 }
 
 static void render() {
@@ -80,22 +107,31 @@ static void render() {
     gShader->setValue("projection", projection);
     gShader->setValue("view", view);
 
+    gInstanceShader->use();
+    gInstanceShader->setValue("projection", projection);
+    gInstanceShader->setValue("view", view);
+
     auto model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(0.0f, -3.0f, 0.0f));
     model = glm::scale(model, glm::vec3(4.0f, 4.0f, 4.0f));
+    gShader->use();
     gShader->setValue("model", model);
     gPlanetModel->draw(*gShader);
 
-    for (int i = 0; i < AMOUNT; i++) {
-        gShader->setValue("model", gModelMatrices[i]);
-        gRockModel->draw(*gShader);
+    for (int i = 0; i < static_cast<int>(gRockModel->meshes().size()); i++) {
+        gInstanceShader->use();
+        glBindVertexArray(gRockModel->meshes()[i]->vao());
+        glDrawElementsInstanced(GL_TRIANGLES, gRockModel->meshes()[i]->indices().size(), GL_UNSIGNED_INT, reinterpret_cast<void*>(0), AMOUNT);
     }
 }
 
 static void clean() {
     delete gShader;
+    delete gInstanceShader;
     delete gRockModel;
     delete gPlanetModel;
+
+    glDeleteBuffers(1, &gInstanceVbo);
 }
 
 static void renderLoop(SDL_Window* window) {
@@ -197,7 +233,7 @@ int main() {
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_MULTISAMPLE);
     glEnable(GL_BLEND);
-    glEnable(GL_CULL_FACE);
+//    glEnable(GL_CULL_FACE);
 
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 

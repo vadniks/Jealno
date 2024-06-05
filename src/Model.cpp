@@ -45,6 +45,10 @@ void Model::draw(CompoundShader& shader) {
 //    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
+const std::vector<Mesh*>& Model::meshes() {
+    return mMeshes;
+}
+
 void Model::processNode(aiNode* node, const aiScene* scene) {
     for (int i = 0; i < (int) node->mNumMeshes; i++)
         mMeshes.push_back(processMesh(scene->mMeshes[node->mMeshes[i]], scene));

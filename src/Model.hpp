@@ -40,6 +40,8 @@ public:
     Model& operator =(Model&&) = delete;
 
     void draw(CompoundShader& shader);
+
+    const std::vector<Mesh*>& meshes();
 private:
     void processNode(aiNode* node, const aiScene* scene);
     Mesh* processMesh(aiMesh* mesh, const aiScene* scene);

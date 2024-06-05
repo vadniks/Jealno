@@ -55,4 +55,7 @@ public:
     Mesh& operator =(Mesh&&) = delete;
 
     void draw(CompoundShader& shader);
+
+    unsigned vao();
+    const std::vector<unsigned>& indices();
 };
