@@ -37,8 +37,8 @@ static const int AMOUNT = 1000;
 static int gWidth = 0, gHeight = 0;
 static Camera gCamera(glm::vec3(0.0f, 0.0f, 7.5f));
 static glm::mat4 gModelMatrices[AMOUNT];
-static CompoundShader* gShader;
-static Model* gRockModel, * gPlanetModel;
+static CompoundShader* gShader = nullptr;
+static Model* gRockModel = nullptr, * gPlanetModel = nullptr;
 
 static void init() {
     srand(SDL_GetTicks());

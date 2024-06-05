@@ -118,21 +118,16 @@ std::vector<Texture> Model::loadMaterialTextures(const aiMaterial* mat, aiTextur
 unsigned Model::textureFromFile(const std::string& path, const std::string& directory) {
     std::string filename = directory + '/' + path;
 
-    int format;
-    if (filename.ends_with(".png"))
-        format = GL_RGBA;
-    else if (filename.ends_with(".jpg"))
-        format = GL_RGB;
-    else
-        assert(false);
+    SDL_Surface* xSurface = IMG_Load(filename.c_str());
+    assert(xSurface != nullptr);
 
-    SDL_Surface* surface = IMG_Load(filename.c_str());
-    assert(surface != nullptr);
+    SDL_Surface* surface = SDL_ConvertSurfaceFormat(xSurface, SDL_PIXELFORMAT_RGBA32, 0);
+    SDL_FreeSurface(xSurface);
 
     unsigned texture;
     glGenTextures(1, &texture);
     glBindTexture(GL_TEXTURE_2D, texture);
-    glTexImage2D(GL_TEXTURE_2D, 0, format, surface->w, surface->h, 0, format, GL_UNSIGNED_BYTE, surface->pixels);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, surface->w, surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, surface->pixels);
     glGenerateMipmap(GL_TEXTURE_2D);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
