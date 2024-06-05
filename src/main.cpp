@@ -93,7 +93,7 @@ static void clean() {
     glDeleteVertexArrays(1, &gQuadVao);
     glDeleteBuffers(1, &gQuadVbo);
 
-//    glDeleteBuffers(1, &gInstanceVbo);
+    glDeleteBuffers(1, &gInstanceVbo);
 }
 
 static void renderLoop(SDL_Window* window) {
