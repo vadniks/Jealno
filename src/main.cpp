@@ -16,8 +16,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#pragma clang diagnostic ignored "-Wunknown-pragmas"
+#pragma ide diagnostic ignored "cert-msc50-cpp"
+
 #include "Camera.hpp"
 #include "CompoundShader.hpp"
+#include "Model.hpp"
 #include <cassert>
 #include <string>
 #include <SDL2/SDL.h>
@@ -28,25 +32,70 @@
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_transform.hpp>
 
+static const int AMOUNT = 1000;
+
 static int gWidth = 0, gHeight = 0;
 static Camera gCamera(glm::vec3(0.0f, 0.0f, 7.5f));
-//static unsigned ;
-static CompoundShader* gShader = nullptr;
+static glm::mat4 gModelMatrices[AMOUNT];
+static CompoundShader* gShader;
+static Model* gRockModel, * gPlanetModel;
 
 static void init() {
-    gShader = new CompoundShader("shaders/vertex.glsl", "shaders/fragment.glsl");
-    gShader->use();
+    srand(SDL_GetTicks());
 
+    float radius = 50.0;
+    float offset = 2.5f;
+
+    for (int i = 0; i < AMOUNT; i++) {
+        auto model = glm::mat4(1.0f);
+
+        float angle = (float)i / (float)AMOUNT * 360.0f;
+        float displacement = static_cast<float>(rand() % static_cast<int>(2 * offset * 100)) / 100.0f - offset;
+        float x = sin(angle) * radius + displacement;
+        displacement = static_cast<float>(rand() % static_cast<int>(2 * offset * 100)) / 100.0f - offset;
+        float y = displacement * 0.4f;
+        displacement = static_cast<float>(rand() % static_cast<int>(2 * offset * 100)) / 100.0f - offset;
+        float z = cos(angle) * radius + displacement;
+        model = glm::translate(model, glm::vec3(x, y, z));
+
+        float scale = static_cast<float>(rand() % 20) / 100.0f + 0.05f;
+        model = glm::scale(model, glm::vec3(scale));
+
+        auto rotAngle = static_cast<float>(rand() % 360);
+        model = glm::rotate(model, rotAngle, glm::vec3(0.4f, 0.6f, 0.8f));
+
+        gModelMatrices[i] = model;
+    }
+
+    gShader = new CompoundShader("shaders/vertex.glsl", "shaders/fragment.glsl");
+    gRockModel = new Model("/home/admin/Downloads/rock/rock.obj");
+    gPlanetModel = new Model("/home/admin/Downloads/planet/planet.obj");
 }
 
 static void render() {
-    gShader->use();
+    glm::mat4 projection = glm::perspective(glm::radians(45.0f), static_cast<float>(gWidth) / static_cast<float>(gHeight), 0.1f, 1000.0f);
+    glm::mat4 view = gCamera.viewMatrix();
 
+    gShader->use();
+    gShader->setValue("projection", projection);
+    gShader->setValue("view", view);
+
+    auto model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(0.0f, -3.0f, 0.0f));
+    model = glm::scale(model, glm::vec3(4.0f, 4.0f, 4.0f));
+    gShader->setValue("model", model);
+    gPlanetModel->draw(*gShader);
+
+    for (int i = 0; i < AMOUNT; i++) {
+        gShader->setValue("model", gModelMatrices[i]);
+        gRockModel->draw(*gShader);
+    }
 }
 
 static void clean() {
     delete gShader;
-
+    delete gRockModel;
+    delete gPlanetModel;
 }
 
 static void renderLoop(SDL_Window* window) {
@@ -148,7 +197,7 @@ int main() {
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_MULTISAMPLE);
     glEnable(GL_BLEND);
-//    glEnable(GL_CULL_FACE);
+    glEnable(GL_CULL_FACE);
 
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 

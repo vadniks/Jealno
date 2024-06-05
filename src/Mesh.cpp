@@ -67,17 +67,20 @@ Mesh::~Mesh() {
 void Mesh::draw(CompoundShader& shader) {
     shader.use();
 
-    for (unsigned i = 0, diffuseNr = 0, specularNr = 0; i < mTextures.size(); i++) {
+    for (int i = 0/*, diffuseNr = 0, specularNr = 0*/; i < (int) mTextures.size(); i++) {
         glActiveTexture(GL_TEXTURE0 + i);
 
-        std::string number;
+//        std::string number;
         std::string name = mTextures[i].type;
-        if (name == Texture::TYPE_DIFFUSE)
-            number = std::to_string(diffuseNr++);
-        else if (name == Texture::TYPE_SPECULAR)
-            number = std::to_string(specularNr++);
+//        if (name == Texture::TYPE_DIFFUSE)
+//            number = std::to_string(diffuseNr++);
+//        else if (name == Texture::TYPE_SPECULAR)
+//            number = std::to_string(specularNr++);
 
-        shader.setValue(std::string("material.").append(name).append(number), (int) i);
+//        shader.setValue(std::string("material.").append(name).append(number), i);
+        if (name == Texture::TYPE_DIFFUSE)
+            shader.setValue("textureDiffuse", i);
+
         glBindTexture(GL_TEXTURE_2D, mTextures[i].id);
     }
 
