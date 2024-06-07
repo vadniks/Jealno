@@ -32,17 +32,160 @@ static const int AMOUNT = 1000;
 
 static int gWidth = 0, gHeight = 0;
 static Camera gCamera(glm::vec3(0.0f, 0.0f, 7.5f));
+static CompoundShader* gShader = nullptr, * gScreenShader = nullptr;
+static unsigned gCubeVao, gCubeVbo, gQuadVao, gQuadVbo, gFramebuffer, gTextureBuffer, gRbo, gIntermediateFbo, gScreenTexture;
 
 static void init() {
+    gShader = new CompoundShader("shaders/vertex.glsl", "shaders/fragment.glsl");
+    gScreenShader = new CompoundShader("shaders/screenVertex.glsl", "shaders/screenFragment.glsl");
 
+    float cubeVertices[] = {
+        -0.5f, -0.5f, -0.5f,
+        0.5f, -0.5f, -0.5f,
+        0.5f,  0.5f, -0.5f,
+        0.5f,  0.5f, -0.5f,
+        -0.5f,  0.5f, -0.5f,
+        -0.5f, -0.5f, -0.5f,
+        -0.5f, -0.5f,  0.5f,
+        0.5f, -0.5f,  0.5f,
+        0.5f,  0.5f,  0.5f,
+        0.5f,  0.5f,  0.5f,
+        -0.5f,  0.5f,  0.5f,
+        -0.5f, -0.5f,  0.5f,
+        -0.5f,  0.5f,  0.5f,
+        -0.5f,  0.5f, -0.5f,
+        -0.5f, -0.5f, -0.5f,
+        -0.5f, -0.5f, -0.5f,
+        -0.5f, -0.5f,  0.5f,
+        -0.5f,  0.5f,  0.5f,
+        0.5f,  0.5f,  0.5f,
+        0.5f,  0.5f, -0.5f,
+        0.5f, -0.5f, -0.5f,
+        0.5f, -0.5f, -0.5f,
+        0.5f, -0.5f,  0.5f,
+        0.5f,  0.5f,  0.5f,
+        -0.5f, -0.5f, -0.5f,
+        0.5f, -0.5f, -0.5f,
+        0.5f, -0.5f,  0.5f,
+        0.5f, -0.5f,  0.5f,
+        -0.5f, -0.5f,  0.5f,
+        -0.5f, -0.5f, -0.5f,
+        -0.5f,  0.5f, -0.5f,
+        0.5f,  0.5f, -0.5f,
+        0.5f,  0.5f,  0.5f,
+        0.5f,  0.5f,  0.5f,
+        -0.5f,  0.5f,  0.5f,
+        -0.5f,  0.5f, -0.5f
+    };
+
+    float quadVertices[] = {
+        -1.0f,  1.0f,  0.0f, 1.0f,
+        -1.0f, -1.0f,  0.0f, 0.0f,
+        1.0f, -1.0f,  1.0f, 0.0f,
+        -1.0f,  1.0f,  0.0f, 1.0f,
+        1.0f, -1.0f,  1.0f, 0.0f,
+        1.0f,  1.0f,  1.0f, 1.0f
+    };
+
+    glGenVertexArrays(1, &gCubeVao);
+    glGenBuffers(1, &gCubeVbo);
+    glBindVertexArray(gCubeVao);
+    glBindBuffer(GL_ARRAY_BUFFER, gCubeVbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), cubeVertices, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), reinterpret_cast<void*>(0));
+
+    glGenVertexArrays(1, &gQuadVao);
+    glGenBuffers(1, &gQuadVbo);
+    glBindVertexArray(gQuadVao);
+    glBindBuffer(GL_ARRAY_BUFFER, gQuadVbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), reinterpret_cast<void*>(0));
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), reinterpret_cast<void*>(2 * sizeof(float)));
+
+    glGenFramebuffers(1, &gFramebuffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, gFramebuffer);
+
+    glGenTextures(1, &gTextureBuffer);
+    glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, gTextureBuffer);
+    glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 4, GL_RGBA, gWidth, gHeight, GL_TRUE);
+    glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, gTextureBuffer, 0);
+
+    glGenRenderbuffers(1, &gRbo);
+    glBindRenderbuffer(GL_RENDERBUFFER, gRbo);
+    glRenderbufferStorageMultisample(GL_RENDERBUFFER, 4, GL_DEPTH24_STENCIL8, gWidth, gHeight);
+    glBindRenderbuffer(GL_RENDERBUFFER, 0);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, gRbo);
+
+    assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
+
+    glGenFramebuffers(1, &gIntermediateFbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, gIntermediateFbo);
+
+    glGenTextures(1, &gScreenTexture);
+    glBindTexture(GL_TEXTURE_2D, gScreenTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, gWidth, gHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, gScreenTexture, 0);
+
+    assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
+
+    gScreenShader->use();
+    gScreenShader->setValue("screenTexture", 0);
 }
 
 static void render() {
+    glBindFramebuffer(GL_FRAMEBUFFER, gFramebuffer);
+    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
+    gShader->use();
+    glm::mat4 projection = glm::perspective(glm::radians(gCamera.zoom()), static_cast<float>(gWidth) / static_cast<float>(gHeight), 0.1f, 1000.0f);
+    gShader->setValue("projection", projection);
+    gShader->setValue("view", gCamera.viewMatrix());
+    gShader->setValue("model", glm::mat4(1.0f));
+
+    glBindVertexArray(gCubeVao);
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, gFramebuffer);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, gIntermediateFbo);
+    glBlitFramebuffer(0, 0, gWidth, gHeight, 0, 0, gWidth, gHeight, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    gScreenShader->use();
+    glBindVertexArray(gQuadVao);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, gScreenTexture);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
 static void clean() {
+    delete gShader;
+    delete gScreenShader;
 
+    glDeleteVertexArrays(1, &gCubeVao);
+    glDeleteBuffers(1, &gCubeVbo);
+
+    glDeleteVertexArrays(1, &gQuadVao);
+    glDeleteBuffers(1, &gQuadVbo);
+
+    glDeleteFramebuffers(1, &gFramebuffer);
+
+    glDeleteTextures(1, &gTextureBuffer);
+
+    glDeleteRenderbuffers(1, &gRbo);
+
+    glDeleteFramebuffers(1, &gIntermediateFbo);
+
+    glDeleteTextures(1, &gScreenTexture);
 }
 
 static void renderLoop(SDL_Window* window) {
@@ -144,7 +287,7 @@ int main() {
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_MULTISAMPLE);
     glEnable(GL_BLEND);
-    glEnable(GL_CULL_FACE);
+//    glEnable(GL_CULL_FACE);
 
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
