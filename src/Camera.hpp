@@ -42,6 +42,12 @@ public:
         float yaw = -90.0f,
         float pitch = 0.0f
     );
+    Camera(const Camera&) = delete;
+    Camera(Camera&&) = delete;
+
+    Camera& operator =(const Camera&) = delete;
+    Camera& operator =(Camera&&) = delete;
+
     glm::mat4 viewMatrix();
     void processKeyboard(Direction direction);
     void processMouseMovement(float xOffset, float yOffset);
