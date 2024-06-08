@@ -32,7 +32,7 @@ static const int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
 
 static int gWidth = 0, gHeight = 0;
 static Camera gCamera(glm::vec3(0.0f, 0.0f, 7.5f));
-static CompoundShader* gDepthShader = nullptr, * gQuadShader = nullptr;
+static CompoundShader* gDepthShader = nullptr, * gQuadShader = nullptr, * gShader = nullptr;
 static unsigned gDepthMapFbo, gDepthMap, gPlaneVao, gPlaneVbo, gTexture, gCubeVao, gCubeVbo, gQuadVao, gQuadVbo;
 
 static unsigned loadTexture(std::string&& path, bool clampToEdge) {
@@ -63,6 +63,7 @@ static unsigned loadTexture(std::string&& path, bool clampToEdge) {
 static void init() {
     gDepthShader = new CompoundShader("shaders/depthVertex.glsl", "shaders/depthFragment.glsl");
     gQuadShader = new CompoundShader("shaders/quadVertex.glsl", "shaders/quadFragment.glsl");
+    gShader = new CompoundShader("shaders/shadowVertex.glsl", "shaders/shadowFragment.glsl");
 
     float planeVertices[] = {
         25.0f, -0.5f,  25.0f,  0.0f, 1.0f, 0.0f,  25.0f,  0.0f,
@@ -108,6 +109,10 @@ static void init() {
 
     gQuadShader->use();
     gQuadShader->setValue("depthMap", 0);
+
+    gShader->use();
+    gShader->setValue("diffuseTexture", 0);
+    gShader->setValue("shadowMap", 1);
 
     float cubeVertices[] = {
         -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f,
@@ -186,29 +191,29 @@ static void renderCube() {
     glBindVertexArray(0);
 }
 
-static void renderScene() {
+static void renderScene(CompoundShader* shader) {
     auto model = glm::mat4(1.0f);
-    gDepthShader->setValue("model", model);
+    shader->setValue("model", model);
     glBindVertexArray(gPlaneVao);
     glDrawArrays(GL_TRIANGLES, 0, 6);
 
     model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(0.0f, 1.5f, 0.0));
     model = glm::scale(model, glm::vec3(0.5f));
-    gDepthShader->setValue("model", model);
+    shader->setValue("model", model);
     renderCube();
 
     model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(2.0f, 0.0f, 1.0));
     model = glm::scale(model, glm::vec3(0.5f));
-    gDepthShader->setValue("model", model);
+    shader->setValue("model", model);
     renderCube();
 
     model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(-1.0f, 0.0f, 2.0));
     model = glm::rotate(model, glm::radians(60.0f), glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
     model = glm::scale(model, glm::vec3(0.25));
-    gDepthShader->setValue("model", model);
+    shader->setValue("model", model);
     renderCube();
 }
 
@@ -219,8 +224,10 @@ static void renderQuad() {
 }
 
 static void render() {
+    glm::vec3 lightPos(-2.0f, 4.0f, -1.0f);
+
     glm::mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, 7.5f);
-    glm::mat4 lightView = glm::lookAt(glm::vec3(-2.0f, 4.0f, -1.0f), glm::vec3( 0.0f, 0.0f, 0.0f), glm::vec3( 0.0f, 1.0f, 0.0f));
+    glm::mat4 lightView = glm::lookAt(lightPos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3( 0.0f, 1.0f, 0.0f));
     glm::mat4 lightSpaceMatrix = lightProjection * lightView;
 
     gDepthShader->use();
@@ -233,26 +240,43 @@ static void render() {
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, gTexture);
 
-    renderScene();
+    renderScene(gDepthShader);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0, 0, gWidth, gHeight);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    gQuadShader->use();
+    gShader->use();
+    glm::mat4 projection = glm::perspective(glm::radians(gCamera.zoom()), static_cast<float>(gWidth) / static_cast<float>(gHeight), 0.1f, 100.0f);
+    glm::mat4 view = gCamera.viewMatrix();
+    gShader->setValue("projection", projection);
+    gShader->setValue("view", view);
+    gShader->setValue("viewPos", gCamera.position());
+    gShader->setValue("lightPos", lightPos);
+    gShader->setValue("lightSpaceMatrix", lightSpaceMatrix);
+
     glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, gTexture);
+    glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, gDepthMap);
 
-    renderQuad();
+    renderScene(gShader);
+
+//    gQuadShader->use();
+//    glActiveTexture(GL_TEXTURE0);
+//    glBindTexture(GL_TEXTURE_2D, gDepthMap);
+//
+//    renderQuad();
 }
 
 static void clean() {
+    delete gDepthShader;
+    delete gQuadShader;
+    delete gShader;
+
     glDeleteFramebuffers(1, &gDepthMapFbo);
 
     glDeleteTextures(1, &gDepthMap);
-
-    delete gDepthShader;
-    delete gQuadShader;
 
     glDeleteVertexArrays(1, &gPlaneVao);
     glDeleteBuffers(1, &gPlaneVbo);
