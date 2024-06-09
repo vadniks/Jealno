@@ -99,7 +99,7 @@ static void render() {
 
     auto lightModel = glm::mat4(1.0f);
     lightModel = glm::translate(lightModel, lightPos);
-    lightModel = glm::scale(lightModel, glm::vec3(0.05f));
+    lightModel = glm::scale(lightModel, glm::vec3(0.125f));
     gLightShader->use();
     gLightShader->setValue("model", lightModel);
     gCubeModel->draw(gLightShader, glm::vec4(1.0f));
