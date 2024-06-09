@@ -28,8 +28,6 @@
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_transform.hpp>
 
-static const int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
-
 static int gWidth = 0, gHeight = 0;
 static Camera gCamera(glm::vec3(0.0f, 0.0f, 7.5f));
 
