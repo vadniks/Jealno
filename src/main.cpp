@@ -77,7 +77,7 @@ static void render() {
     gObjectShader->use();
     gObjectShader->setValue("projection", projection);
     gObjectShader->setValue("view", view);
-    gObjectShader->setValue("lightColor", glm::vec4(1.0f));
+    gObjectShader->setValue("lightColor", glm::vec3(1.0f));
     gObjectShader->setValue("lightPos", lightPos);
     gObjectShader->setValue("viewPos", gCamera.position());
 
@@ -89,13 +89,15 @@ static void render() {
     tileModel = glm::translate(tileModel, glm::vec3(0.0f, 1.0f, 0.0f));
     gObjectShader->use();
     gObjectShader->setValue("model", tileModel);
+    gObjectShader->setValue("objectColor", glm::vec3(1.0f, 0.5f, 0.31f));
     gTileModel->draw(gObjectShader, glm::vec4(0.5f));
 
-    auto chipModel = glm::mat4(1.0f);
-    chipModel = glm::translate(chipModel, glm::vec3(0.0f, -1.0f, 0.0f));
-    gObjectShader->use();
-    gObjectShader->setValue("model", chipModel);
-    gChipModel->draw(gObjectShader, glm::vec4(0.5f));
+//    auto chipModel = glm::mat4(1.0f);
+//    chipModel = glm::translate(chipModel, glm::vec3(0.0f, -1.0f, 0.0f));
+//    gObjectShader->use();
+//    gObjectShader->setValue("model", chipModel);
+//    gObjectShader->setValue("objectColor", glm::vec3(1.0f, 0.5f, 0.31f));
+//    gChipModel->draw(gObjectShader, glm::vec4(0.5f));
 
     auto lightModel = glm::mat4(1.0f);
     lightModel = glm::translate(lightModel, lightPos);
