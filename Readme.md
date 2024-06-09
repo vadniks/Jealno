@@ -1,4 +1,6 @@
 
+# Project development is suspended until I learn how to create 3d models :(
+
 Learning OpenGL by trying to make a 3d game, it's gonna take much time... 
 
 The 'Learn OpenGL - Graphics programming' book by Joey de Vries is used, 
