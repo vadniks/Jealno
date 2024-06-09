@@ -64,25 +64,11 @@ Mesh::~Mesh() {
     glDeleteBuffers(1, &mEbo);
 }
 
-void Mesh::draw(CompoundShader& shader) {
-    shader.use();
+void Mesh::draw(CompoundShader* shader, const glm::vec4& color) {
+    assert((int) mTextures.size() == 0);
 
-    for (int i = 0, diffuseNr = 0, specularNr = 0; i < (int) mTextures.size(); i++) {
-        glActiveTexture(GL_TEXTURE0 + i);
-
-        std::string number;
-        std::string name = mTextures[i].type;
-        if (name == Texture::TYPE_DIFFUSE)
-            number = std::to_string(diffuseNr++);
-        else if (name == Texture::TYPE_SPECULAR)
-            number = std::to_string(specularNr++);
-
-        shader.setValue(std::string("material.").append(name).append(number), i);
-
-        glBindTexture(GL_TEXTURE_2D, mTextures[i].id);
-    }
-
-    glActiveTexture(0);
+    shader->use();
+    shader->setValue("color", color);
 
     glBindVertexArray(mVao);
     glDrawElements(GL_TRIANGLES, (int) mIndices.size(), GL_UNSIGNED_INT, reinterpret_cast<void*>(0));

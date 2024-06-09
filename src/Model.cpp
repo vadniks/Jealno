@@ -38,11 +38,9 @@ Model::~Model() {
         delete mesh;
 }
 
-void Model::draw(CompoundShader& shader) {
-//    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+void Model::draw(CompoundShader* shader, const glm::vec4& color) {
     for (auto mesh : mMeshes)
-        mesh->draw(shader);
-//    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        mesh->draw(shader, color);
 }
 
 const std::vector<Mesh*>& Model::meshes() {

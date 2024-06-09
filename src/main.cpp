@@ -75,12 +75,12 @@ static void render() {
     auto tileModel = glm::mat4(1.0f);
     tileModel = glm::translate(tileModel, glm::vec3(0.0f, 1.0f, 0.0f));
     gObjectShader->setValue("model", tileModel);
-    gTileModel->draw(*gObjectShader);
+    gTileModel->draw(gObjectShader, glm::vec4(1.0f));
 
     auto chipModel = glm::mat4(1.0f);
     chipModel = glm::translate(chipModel, glm::vec3(0.0f, -1.0f, 0.0f));
     gObjectShader->setValue("model", chipModel);
-    gChipModel->draw(*gObjectShader);
+    gChipModel->draw(gObjectShader, glm::vec4(1.0f));
 }
 
 static void clean() {

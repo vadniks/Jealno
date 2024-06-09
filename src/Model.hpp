@@ -30,7 +30,7 @@ private:
     std::string mDirectory;
     std::vector<Texture> mLoadedTextures;
 public:
-    explicit Model(const std::string& path);
+    Model(const std::string& path);
     Model(const Model&) = delete;
     Model(Model&&) = delete;
 
@@ -39,7 +39,7 @@ public:
     Model& operator =(const Model&) = delete;
     Model& operator =(Model&&) = delete;
 
-    void draw(CompoundShader& shader);
+    void draw(CompoundShader* shader, const glm::vec4& color);
 
     const std::vector<Mesh*>& meshes();
 private:
