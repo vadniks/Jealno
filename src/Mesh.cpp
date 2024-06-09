@@ -68,7 +68,7 @@ void Mesh::draw(CompoundShader* shader, const glm::vec4& color) {
     assert((int) mTextures.size() == 0);
 
     shader->use();
-    shader->setValue("color", color);
+    shader->setValue("objectColor", color);
 
     glBindVertexArray(mVao);
     glDrawElements(GL_TRIANGLES, (int) mIndices.size(), GL_UNSIGNED_INT, reinterpret_cast<void*>(0));

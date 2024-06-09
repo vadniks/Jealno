@@ -31,8 +31,8 @@
 
 static int gWidth = 0, gHeight = 0;
 static Camera gCamera(glm::vec3(0.0f, 0.0f, 7.5f));
-static CompoundShader* gObjectShader = nullptr;
-static Model* gTileModel = nullptr, * gChipModel = nullptr;
+static CompoundShader* gObjectShader = nullptr, * gLightShader = nullptr;
+static Model* gTileModel = nullptr, * gChipModel = nullptr, * gCubeModel = nullptr;
 
 static unsigned loadTexture(std::string&& path, bool clampToEdge) {
     if (!path.ends_with(".png") && !path.ends_with(".jpg"))
@@ -61,33 +61,57 @@ static unsigned loadTexture(std::string&& path, bool clampToEdge) {
 
 static void init() {
     gObjectShader = new CompoundShader("shaders/objectVertex.glsl", "shaders/objectFragment.glsl");
+    gLightShader = new CompoundShader("shaders/lightVertex.glsl", "shaders/lightFragment.glsl");
 
     gTileModel = new Model("models/tile/tile.obj");
     gChipModel = new Model("models/chip/chip.obj");
+    gCubeModel = new Model("models/cube/cube.obj");
 }
 
 static void render() {
+    const auto lightPos = glm::vec3(1.2f, 1.0f, 2.0f);
+
     const glm::mat4 projection = glm::perspective(glm::radians(gCamera.zoom()), static_cast<float>(gWidth) / static_cast<float>(gHeight), 0.1f, 100.0f);
     const glm::mat4 view = gCamera.viewMatrix();
+
+    gObjectShader->use();
     gObjectShader->setValue("projection", projection);
     gObjectShader->setValue("view", view);
+    gObjectShader->setValue("lightColor", glm::vec4(1.0f));
+    gObjectShader->setValue("lightPos", lightPos);
+    gObjectShader->setValue("viewPos", gCamera.position());
+
+    gLightShader->use();
+    gLightShader->setValue("projection", projection);
+    gLightShader->setValue("view", view);
 
     auto tileModel = glm::mat4(1.0f);
     tileModel = glm::translate(tileModel, glm::vec3(0.0f, 1.0f, 0.0f));
+    gObjectShader->use();
     gObjectShader->setValue("model", tileModel);
-    gTileModel->draw(gObjectShader, glm::vec4(1.0f));
+    gTileModel->draw(gObjectShader, glm::vec4(0.5f));
 
     auto chipModel = glm::mat4(1.0f);
     chipModel = glm::translate(chipModel, glm::vec3(0.0f, -1.0f, 0.0f));
+    gObjectShader->use();
     gObjectShader->setValue("model", chipModel);
-    gChipModel->draw(gObjectShader, glm::vec4(1.0f));
+    gChipModel->draw(gObjectShader, glm::vec4(0.5f));
+
+    auto lightModel = glm::mat4(1.0f);
+    lightModel = glm::translate(lightModel, lightPos);
+    lightModel = glm::scale(lightModel, glm::vec3(0.05f));
+    gLightShader->use();
+    gLightShader->setValue("model", lightModel);
+    gCubeModel->draw(gLightShader, glm::vec4(1.0f));
 }
 
 static void clean() {
     delete gObjectShader;
+    delete gLightShader;
 
     delete gTileModel;
     delete gChipModel;
+    delete gCubeModel;
 }
 
 static void renderLoop(SDL_Window* window) {
