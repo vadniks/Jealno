@@ -18,6 +18,7 @@
 
 #include "Camera.hpp"
 #include "CompoundShader.hpp"
+#include "Model.hpp"
 #include <cassert>
 #include <string>
 #include <SDL2/SDL.h>
@@ -30,6 +31,8 @@
 
 static int gWidth = 0, gHeight = 0;
 static Camera gCamera(glm::vec3(0.0f, 0.0f, 7.5f));
+static CompoundShader* gObjectShader = nullptr;
+static Model* gTileModel = nullptr, * gChipModel = nullptr;
 
 static unsigned loadTexture(std::string&& path, bool clampToEdge) {
     if (!path.ends_with(".png") && !path.ends_with(".jpg"))
@@ -57,15 +60,34 @@ static unsigned loadTexture(std::string&& path, bool clampToEdge) {
 }
 
 static void init() {
+    gObjectShader = new CompoundShader("shaders/objectVertex.glsl", "shaders/objectFragment.glsl");
 
+    gTileModel = new Model("models/tile/tile.obj");
+    gChipModel = new Model("models/chip/chip.obj");
 }
 
 static void render() {
+    const glm::mat4 projection = glm::perspective(glm::radians(gCamera.zoom()), static_cast<float>(gWidth) / static_cast<float>(gHeight), 0.1f, 100.0f);
+    const glm::mat4 view = gCamera.viewMatrix();
+    gObjectShader->setValue("projection", projection);
+    gObjectShader->setValue("view", view);
 
+    auto tileModel = glm::mat4(1.0f);
+    tileModel = glm::translate(tileModel, glm::vec3(0.0f, 1.0f, 0.0f));
+    gObjectShader->setValue("model", tileModel);
+    gTileModel->draw(*gObjectShader);
+
+    auto chipModel = glm::mat4(1.0f);
+    chipModel = glm::translate(chipModel, glm::vec3(0.0f, -1.0f, 0.0f));
+    gObjectShader->setValue("model", chipModel);
+    gChipModel->draw(*gObjectShader);
 }
 
 static void clean() {
+    delete gObjectShader;
 
+    delete gTileModel;
+    delete gChipModel;
 }
 
 static void renderLoop(SDL_Window* window) {
@@ -154,8 +176,8 @@ int main() {
         "Jealno",
         SDL_WINDOWPOS_CENTERED,
         SDL_WINDOWPOS_CENTERED,
-        (gWidth = 1024),
-        (gHeight = 1024),
+        (gWidth = 16 * 100),
+        (gHeight = 9 * 100),
         SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN
     );
     assert(window != nullptr);
