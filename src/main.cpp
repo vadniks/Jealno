@@ -245,7 +245,9 @@ static void render() {
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, gTexture);
 
+    glCullFace(GL_FRONT);
     renderScene(gDepthShader);
+    glCullFace(GL_BACK);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0, 0, gWidth, gHeight);
