@@ -87,7 +87,7 @@ static void init() {
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), reinterpret_cast<void*>(6 * sizeof(float)));
     glBindVertexArray(0);
 
-    gTexture = loadTexture("res/metal.png", true);
+    gTexture = loadTexture("res/metal.png", false);
 
     glGenFramebuffers(1, &gDepthMapFbo);
 
@@ -195,7 +195,9 @@ static void renderScene(CompoundShader* shader) {
     auto model = glm::mat4(1.0f);
     shader->setValue("model", model);
     glBindVertexArray(gPlaneVao);
+    glCullFace(GL_FRONT);
     glDrawArrays(GL_TRIANGLES, 0, 6);
+    glCullFace(GL_BACK);
 
     model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(0.0f, 1.5f, 0.0));
@@ -392,7 +394,7 @@ int main() {
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_MULTISAMPLE);
     glEnable(GL_BLEND);
-//    glEnable(GL_CULL_FACE);
+    glEnable(GL_CULL_FACE);
 
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
