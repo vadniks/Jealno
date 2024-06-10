@@ -16,6 +16,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#pragma clang diagnostic ignored "-Wunknown-pragmas"
+#pragma ide diagnostic ignored "NullDereference"
+
 #include "Camera.hpp"
 #include "CompoundShader.hpp"
 #include "Model.hpp"
@@ -75,6 +78,11 @@ static void init() {
     glReadBuffer(GL_NONE);
     assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    for (int i = 0; i < FIELD_SIZE; i++) {
+        for (int j = 0; j < FIELD_SIZE; j++)
+            gChips[j][i] = Chip::NONE;
+    }
 
     for (int i = 0, k = 0; i < FIELD_SIZE; i++) {
         for (int j = 0; j < 3; j++) {
