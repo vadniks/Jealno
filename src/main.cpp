@@ -29,12 +29,12 @@
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_transform.hpp>
 
-static const int SHADOW_SIZE = 1024;
+static const int SHADOW_SIZE = 1024, FIELD_SIZE = 8;
 
 static int gWidth = 0, gHeight = 0;
 static Camera gCamera(glm::vec3(0.0f, 0.0f, 7.5f));
 static CompoundShader* gObjectShader = nullptr, * gDepthShader = nullptr, * gLightShader = nullptr;
-static Model* gBoardModel = nullptr, * gChipModel = nullptr, * gCubeModel = nullptr;
+static Model* gTileModel = nullptr, * gChipModel = nullptr, * gCubeModel = nullptr;
 static unsigned gDepthMapFbo, gDepthMap;
 static glm::vec3 gLightPos(-2.0f, 4.0f, -1.0f);
 
@@ -47,7 +47,7 @@ static void init() {
 
     gLightShader = new CompoundShader("shaders/lightVertex.glsl", "shaders/lightFragment.glsl");
 
-    gBoardModel = new Model("models/board/board.obj");
+    gTileModel = new Model("models/tile/tile.obj");
     gChipModel = new Model("models/chip/chip.obj");
     gCubeModel = new Model("models/cube/cube.obj");
 
@@ -70,12 +70,19 @@ static void init() {
 }
 
 static void renderScene(CompoundShader* shader) {
-    auto boardModel = glm::mat4(1.0f);
-    boardModel = glm::translate(boardModel, glm::vec3(0.0f, -1.0f, 0.0f));
-    shader->use();
-    shader->setValue("model", boardModel);
-    shader->setValue("objectColor", glm::vec3(0.25f, 0.25f, 0.25f));
-    gBoardModel->draw(shader, glm::vec4(0.5f));
+    for (int i = 0; i < FIELD_SIZE; i++) {
+        for (int j = 0; j < FIELD_SIZE; j++) {
+            auto tileModel = glm::mat4(1.0f);
+            tileModel = glm::translate(tileModel, glm::vec3(0.0f, 0.0f, 0.0f));
+            tileModel = glm::translate(tileModel, glm::vec3(static_cast<float>(i) * 2.5f / 10.0f, -1.0f, static_cast<float>(j) * 2.5f / 10.0f));
+            tileModel = glm::scale(tileModel, glm::vec3(0.125f));
+
+            shader->use();
+            shader->setValue("model", tileModel);
+            shader->setValue("objectColor", (i + j) % 2 == 0 ? glm::vec3(0.125f, 0.125f, 0.125f) : glm::vec3(1.0f, 1.0f, 1.0f));
+            gTileModel->draw(shader, glm::vec4(0.5f));
+        }
+    }
 
     auto chipModel = glm::mat4(1.0f);
     chipModel = glm::translate(chipModel, glm::vec3(0.0f, 1.0f, 0.0f));
@@ -136,7 +143,7 @@ static void clean() {
     delete gDepthShader;
     delete gLightShader;
 
-    delete gBoardModel;
+    delete gTileModel;
     delete gChipModel;
     delete gCubeModel;
 
