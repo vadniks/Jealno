@@ -38,7 +38,7 @@ enum Chip {
 static const int SHADOW_SIZE = 4096, FIELD_SIZE = 8;
 
 static int gWidth = 0, gHeight = 0;
-static Camera gCamera(glm::vec3(-1.0f, 2.5f, 0.8f), glm::vec3(0.0f, 1.0f, 0.0f), -0.1f, -57.0f);
+static Camera gCamera(glm::vec3(0.9f, 2.1f, 2.9f), glm::vec3(0.0f, 1.0f, 0.0f), -89.7f, -47.3f);
 static CompoundShader* gObjectShader = nullptr, * gDepthShader = nullptr, * gLightShader = nullptr;
 static Model* gTileModel = nullptr, * gChipModel = nullptr, * gCubeModel = nullptr;
 static unsigned gDepthMapFbo, gDepthMap;
@@ -76,9 +76,20 @@ static void init() {
     assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    for (int i = 0; i < FIELD_SIZE; i++) {
-        for (int j = 0; j < FIELD_SIZE; j++)
-            gChips[j][i] = (i + j) % 2 == 0 ? Chip::WHITE : Chip::BLACK;
+    for (int i = 0, k = 0; i < FIELD_SIZE; i++) {
+        for (int j = 0; j < 3; j++) {
+            if (k % 2 == 0)
+                gChips[j][i] = (i + j) % 2 == 0 ? Chip::WHITE : Chip::BLACK;
+            k++;
+        }
+    }
+
+    for (int i = 0, k = 0; i < FIELD_SIZE; i++) {
+        for (int j = 5; j < FIELD_SIZE; j++) {
+            if (k % 2 == 0)
+                gChips[j][i] = (i + j) % 2 == 0 ? Chip::WHITE : Chip::BLACK;
+            k++;
+        }
     }
 }
 
@@ -161,6 +172,8 @@ static void render() {
     gCubeModel->draw(gLightShader, glm::vec4(1.0f));
 
     SDL_Delay(1000 / 60);
+    const auto pos = gCamera.position();
+    SDL_Log("%f %f | %f %f %f", gCamera.yaw(), gCamera.pitch(), pos[0], pos[1], pos[2]);
 }
 
 static void clean() {
