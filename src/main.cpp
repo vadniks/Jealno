@@ -35,10 +35,10 @@ enum Chip {
     BLACK = 2
 };
 
-static const int SHADOW_SIZE = 1024, FIELD_SIZE = 8;
+static const int SHADOW_SIZE = 4096, FIELD_SIZE = 8;
 
 static int gWidth = 0, gHeight = 0;
-static Camera gCamera(glm::vec3(-1.0f, 2.5f, 0.7f), glm::vec3(0.0f, 1.0f, 0.0f), -0.1f, -57.0f);
+static Camera gCamera(glm::vec3(-1.0f, 2.5f, 0.8f), glm::vec3(0.0f, 1.0f, 0.0f), -0.1f, -57.0f);
 static CompoundShader* gObjectShader = nullptr, * gDepthShader = nullptr, * gLightShader = nullptr;
 static Model* gTileModel = nullptr, * gChipModel = nullptr, * gCubeModel = nullptr;
 static unsigned gDepthMapFbo, gDepthMap;
@@ -108,7 +108,9 @@ static void renderScene(CompoundShader* shader) {
             shader->use();
             shader->setValue("model", chipModel);
             shader->setValue("objectColor", chip == Chip::WHITE ? glm::vec3(1.0f) : glm::vec3(0.125f));
-            gChipModel->draw(shader, glm::vec4(0.5f));
+
+            if (chip != Chip::NONE)
+                gChipModel->draw(shader, glm::vec4(0.5f));
         }
     }
 }
