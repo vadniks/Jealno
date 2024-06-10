@@ -33,8 +33,8 @@ static const int SHADOW_SIZE = 1024;
 
 static int gWidth = 0, gHeight = 0;
 static Camera gCamera(glm::vec3(0.0f, 0.0f, 7.5f));
-static CompoundShader* gObjectShader = nullptr, * gDepthShader = nullptr;
-static Model* gBoardModel = nullptr, * gChipModel = nullptr;
+static CompoundShader* gObjectShader = nullptr, * gDepthShader = nullptr, * gLightShader = nullptr;
+static Model* gBoardModel = nullptr, * gChipModel = nullptr, * gCubeModel = nullptr;
 static unsigned gDepthMapFbo, gDepthMap;
 static glm::vec3 gLightPos(-2.0f, 4.0f, -1.0f);
 
@@ -45,8 +45,11 @@ static void init() {
 
     gDepthShader = new CompoundShader("shaders/depthVertex.glsl", "shaders/depthFragment.glsl");
 
+    gLightShader = new CompoundShader("shaders/lightVertex.glsl", "shaders/lightFragment.glsl");
+
     gBoardModel = new Model("models/board/board.obj");
     gChipModel = new Model("models/chip/chip.obj");
+    gCubeModel = new Model("models/cube/cube.obj");
 
     glGenTextures(1, &gDepthMap);
     glBindTexture(GL_TEXTURE_2D, gDepthMap);
@@ -115,14 +118,27 @@ static void render() {
     glBindTexture(GL_TEXTURE_2D, gDepthMap);
 
     renderScene(gObjectShader);
+
+    auto lightModelMatrix = glm::mat4(1.0f);
+    lightModelMatrix = glm::translate(lightModelMatrix, gLightPos);
+    lightModelMatrix = glm::scale(lightModelMatrix, glm::vec3(0.25f));
+
+    gLightShader->use();
+    gLightShader->setValue("projection", projection);
+    gLightShader->setValue("view", view);
+    gLightShader->setValue("model", lightModelMatrix);
+
+    gCubeModel->draw(gLightShader, glm::vec4(1.0f));
 }
 
 static void clean() {
     delete gObjectShader;
     delete gDepthShader;
+    delete gLightShader;
 
     delete gBoardModel;
     delete gChipModel;
+    delete gCubeModel;
 
     glDeleteTextures(1, &gDepthMap);
 
