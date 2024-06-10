@@ -44,7 +44,7 @@ static Model* gTileModel = nullptr, * gChipModel = nullptr, * gCubeModel = nullp
 static unsigned gDepthMapFbo, gDepthMap;
 static glm::vec3 gLightPos(-2.0f, 4.0f, -1.0f);
 
-static Chip gChips[FIELD_SIZE * FIELD_SIZE] {Chip::NONE};
+static Chip gChips[FIELD_SIZE][FIELD_SIZE];
 
 static void init() {
     gObjectShader = new CompoundShader("shaders/objectVertex.glsl", "shaders/objectFragment.glsl");
@@ -75,6 +75,11 @@ static void init() {
     glReadBuffer(GL_NONE);
     assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    for (int i = 0; i < FIELD_SIZE; i++) {
+        for (int j = 0; j < FIELD_SIZE; j++)
+            gChips[j][i] = (i + j) % 2 == 0 ? Chip::WHITE : Chip::BLACK;
+    }
 }
 
 static void renderScene(CompoundShader* shader) {
@@ -86,18 +91,26 @@ static void renderScene(CompoundShader* shader) {
 
             shader->use();
             shader->setValue("model", tileModel);
-            shader->setValue("objectColor", (i + j) % 2 == 0 ? glm::vec3(0.125f, 0.125f, 0.125f) : glm::vec3(1.0f, 1.0f, 1.0f));
+            shader->setValue("objectColor", (i + j) % 2 == 0 ? glm::vec3(0.125f) : glm::vec3(1.0f));
             gTileModel->draw(shader, glm::vec4(0.5f));
         }
     }
 
-    auto chipModel = glm::mat4(1.0f);
-    chipModel = glm::translate(chipModel, glm::vec3(0.0f, 0.06f, -0.01f));
-    chipModel = glm::scale(chipModel, glm::vec3(0.45f));
-    shader->use();
-    shader->setValue("model", chipModel);
-    shader->setValue("objectColor", glm::vec3(0.5f, 0.1f, 0.1f));
-    gChipModel->draw(shader, glm::vec4(0.5f));
+    for (int i = 0; i < FIELD_SIZE; i++) {
+        for (int j = 0; j < FIELD_SIZE; j++) {
+            const Chip chip = gChips[j][i];
+
+            auto chipModel = glm::mat4(1.0f);
+            chipModel = glm::translate(chipModel, glm::vec3(0.0f, 0.06f, -0.01f));
+            chipModel = glm::translate(chipModel, glm::vec3(static_cast<float>(i) * 2.5f / 10.0f, 0.0f, static_cast<float>(j) * 2.5f / 10.0f));
+            chipModel = glm::scale(chipModel, glm::vec3(0.45f));
+
+            shader->use();
+            shader->setValue("model", chipModel);
+            shader->setValue("objectColor", chip == Chip::WHITE ? glm::vec3(1.0f) : glm::vec3(0.125f));
+            gChipModel->draw(shader, glm::vec4(0.5f));
+        }
+    }
 }
 
 static void render() {
@@ -146,8 +159,6 @@ static void render() {
     gCubeModel->draw(gLightShader, glm::vec4(1.0f));
 
     SDL_Delay(1000 / 60);
-    const auto pos = gCamera.position();
-    SDL_Log("%f %f | %f %f %f", gCamera.yaw(), gCamera.pitch(), pos[0], pos[1], pos[2]);
 }
 
 static void clean() {
