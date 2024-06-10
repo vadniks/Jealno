@@ -43,10 +43,6 @@ void Model::draw(CompoundShader* shader, const glm::vec4& color) {
         mesh->draw(shader, color);
 }
 
-const std::vector<Mesh*>& Model::meshes() {
-    return mMeshes;
-}
-
 void Model::processNode(aiNode* node, const aiScene* scene) {
     for (int i = 0; i < (int) node->mNumMeshes; i++)
         mMeshes.push_back(processMesh(scene->mMeshes[node->mMeshes[i]]));
@@ -62,10 +58,7 @@ Mesh* Model::processMesh(aiMesh* mesh) {
     for (int i = 0; i < (int) mesh->mNumVertices; i++)
         vertices.push_back(Vertex{
             glm::vec3(mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z),
-            glm::vec3(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z),
-            mesh->mTextureCoords[0] != nullptr
-            ? glm::vec2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y)
-            : glm::vec2(0.0f, 0.0f)
+            glm::vec3(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z)
         });
 
     for (int i = 0; i < (int) mesh->mNumFaces; i++) {
@@ -75,35 +68,6 @@ Mesh* Model::processMesh(aiMesh* mesh) {
     }
 
     return new Mesh(std::move(vertices), std::move(indices));
-}
-
-std::vector<Texture> Model::loadMaterialTextures(const aiMaterial* mat, aiTextureType type, const std::string& typeName) {
-    std::vector<Texture> textures;
-
-    for (int i = 0; i < (int) mat->GetTextureCount(type); i++) {
-        aiString str;
-        mat->GetTexture(type, i, &str);
-
-        bool skip = false;
-        for (auto& texture : mLoadedTextures) {
-            if (std::strcmp(texture.path.c_str(), str.C_Str()) == 0) {
-                textures.push_back(texture);
-                skip = true;
-                break;
-            }
-        }
-
-        if (!skip) {
-            Texture texture;
-            texture.id = textureFromFile(str.C_Str(), mDirectory);
-            texture.type = typeName;
-            texture.path = str.C_Str();
-            textures.push_back(texture);
-            mLoadedTextures.push_back(texture);
-        }
-    }
-
-    return textures;
 }
 
 unsigned Model::textureFromFile(const std::string& path, const std::string& directory) {

@@ -26,15 +26,12 @@
 struct Vertex {
     glm::vec3 Position;
     glm::vec3 Normal;
-    glm::vec2 TexCoords;
 };
 
 struct Texture {
     unsigned int id;
     std::string type;
     std::string path;
-    static inline const std::string TYPE_DIFFUSE = "texture_diffuse";
-    static inline const std::string TYPE_SPECULAR = "texture_specular";
 };
 
 class Mesh {
@@ -54,7 +51,4 @@ public:
     Mesh& operator =(Mesh&&) = delete;
 
     void draw(CompoundShader* shader, const glm::vec4& color);
-
-    unsigned vao();
-    const std::vector<unsigned>& indices();
 };
