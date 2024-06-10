@@ -104,3 +104,11 @@ glm::vec3 Camera::position() {
 glm::vec3 Camera::front() {
     return mFront;
 }
+
+float Camera::yaw() {
+    return mYaw;
+}
+
+float Camera::pitch() {
+    return mPitch;
+}

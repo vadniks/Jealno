@@ -55,6 +55,8 @@ public:
     float zoom();
     glm::vec3 position();
     glm::vec3 front();
+    float yaw();
+    float pitch();
 private:
     void updateCameraVectors();
 };

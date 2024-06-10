@@ -29,14 +29,22 @@
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_transform.hpp>
 
+enum Chip {
+    NONE = 0,
+    WHITE = 1,
+    BLACK = 2
+};
+
 static const int SHADOW_SIZE = 1024, FIELD_SIZE = 8;
 
 static int gWidth = 0, gHeight = 0;
-static Camera gCamera(glm::vec3(0.0f, 0.0f, 7.5f));
+static Camera gCamera(glm::vec3(-1.0f, 2.5f, 0.7f), glm::vec3(0.0f, 1.0f, 0.0f), -0.1f, -57.0f);
 static CompoundShader* gObjectShader = nullptr, * gDepthShader = nullptr, * gLightShader = nullptr;
 static Model* gTileModel = nullptr, * gChipModel = nullptr, * gCubeModel = nullptr;
 static unsigned gDepthMapFbo, gDepthMap;
 static glm::vec3 gLightPos(-2.0f, 4.0f, -1.0f);
+
+static Chip gChips[FIELD_SIZE * FIELD_SIZE] {Chip::NONE};
 
 static void init() {
     gObjectShader = new CompoundShader("shaders/objectVertex.glsl", "shaders/objectFragment.glsl");
@@ -136,6 +144,10 @@ static void render() {
     gLightShader->setValue("model", lightModelMatrix);
 
     gCubeModel->draw(gLightShader, glm::vec4(1.0f));
+
+    SDL_Delay(1000 / 60);
+    const auto pos = gCamera.position();
+    SDL_Log("%f %f | %f %f %f", gCamera.yaw(), gCamera.pitch(), pos[0], pos[1], pos[2]);
 }
 
 static void clean() {
