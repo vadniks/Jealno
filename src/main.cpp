@@ -61,14 +61,14 @@ static void render() {
     gLightShader->setValue("view", view);
 
     auto boardModel = glm::mat4(1.0f);
-    boardModel = glm::translate(boardModel, glm::vec3(0.0f, 1.0f, 0.0f));
+    boardModel = glm::translate(boardModel, glm::vec3(0.0f, -1.0f, 0.0f));
     gObjectShader->use();
     gObjectShader->setValue("model", boardModel);
-    gObjectShader->setValue("objectColor", glm::vec3(1.0f, 0.5f, 0.31f));
+    gObjectShader->setValue("objectColor", glm::vec3(0.25f, 0.25f, 0.25f));
     gBoardModel->draw(gObjectShader, glm::vec4(0.5f));
 
     auto chipModel = glm::mat4(1.0f);
-    chipModel = glm::translate(chipModel, glm::vec3(0.0f, -1.0f, 0.0f));
+    chipModel = glm::translate(chipModel, glm::vec3(0.0f, 1.0f, 0.0f));
     gObjectShader->use();
     gObjectShader->setValue("model", chipModel);
     gObjectShader->setValue("objectColor", glm::vec3(1.0f, 0.5f, 0.31f));
