@@ -172,8 +172,8 @@ static void render() {
     gCubeModel->draw(gLightShader, glm::vec4(1.0f));
 
     SDL_Delay(1000 / 60);
-    const auto pos = gCamera.position();
-    SDL_Log("%f %f | %f %f %f", gCamera.yaw(), gCamera.pitch(), pos[0], pos[1], pos[2]);
+//    const auto pos = gCamera.position();
+//    SDL_Log("%f %f | %f %f %f", gCamera.yaw(), gCamera.pitch(), pos[0], pos[1], pos[2]);
 }
 
 static void clean() {
