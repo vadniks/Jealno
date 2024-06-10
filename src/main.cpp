@@ -29,21 +29,77 @@
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_transform.hpp>
 
+static const int SHADOW_SIZE = 1024;
+
 static int gWidth = 0, gHeight = 0;
 static Camera gCamera(glm::vec3(0.0f, 0.0f, 7.5f));
 static CompoundShader* gObjectShader = nullptr, * gDepthShader = nullptr;
 static Model* gBoardModel = nullptr, * gChipModel = nullptr;
+static unsigned gDepthMapFbo, gDepthMap;
+static glm::vec3 gLightPos(-2.0f, 4.0f, -1.0f);
 
 static void init() {
     gObjectShader = new CompoundShader("shaders/objectVertex.glsl", "shaders/objectFragment.glsl");
+    gObjectShader->use();
+    gObjectShader->setValue("shadowMap", 0);
+
     gDepthShader = new CompoundShader("shaders/depthVertex.glsl", "shaders/depthFragment.glsl");
 
     gBoardModel = new Model("models/board/board.obj");
     gChipModel = new Model("models/chip/chip.obj");
+
+    glGenTextures(1, &gDepthMap);
+    glBindTexture(GL_TEXTURE_2D, gDepthMap);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOW_SIZE, SHADOW_SIZE, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, (float[4]) {1.0f, 1.0f, 1.0f, 1.0f});
+
+    glGenFramebuffers(1, &gDepthMapFbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, gDepthMapFbo);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, gDepthMap, 0);
+    glDrawBuffer(GL_NONE);
+    glReadBuffer(GL_NONE);
+    assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+static void renderScene(CompoundShader* shader) {
+    auto boardModel = glm::mat4(1.0f);
+    boardModel = glm::translate(boardModel, glm::vec3(0.0f, -1.0f, 0.0f));
+    shader->use();
+    shader->setValue("model", boardModel);
+    shader->setValue("objectColor", glm::vec3(0.25f, 0.25f, 0.25f));
+    gBoardModel->draw(shader, glm::vec4(0.5f));
+
+    auto chipModel = glm::mat4(1.0f);
+    chipModel = glm::translate(chipModel, glm::vec3(0.0f, 1.0f, 0.0f));
+    shader->use();
+    shader->setValue("model", chipModel);
+    shader->setValue("objectColor", glm::vec3(1.0f, 0.5f, 0.31f));
+    gChipModel->draw(shader, glm::vec4(0.5f));
 }
 
 static void render() {
-    const auto lightPos = glm::vec3(1.2f, 1.0f, 2.0f);
+    const glm::mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, 7.5f);
+    const glm::mat4 lightView = glm::lookAt(gLightPos, glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
+    const glm::mat4 lightSpaceMatrix = lightProjection * lightView;
+
+    gDepthShader->use();
+    gDepthShader->setValue("lightSpaceMatrix", lightSpaceMatrix);
+    gDepthShader->setValue("model", glm::mat4(1.0f));
+
+    glViewport(0, 0, SHADOW_SIZE, SHADOW_SIZE);
+    glBindFramebuffer(GL_FRAMEBUFFER, gDepthMapFbo);
+    glClear(GL_DEPTH_BUFFER_BIT);
+
+    renderScene(gDepthShader);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    glViewport(0, 0, gWidth, gHeight);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     const glm::mat4 projection = glm::perspective(glm::radians(gCamera.zoom()), static_cast<float>(gWidth) / static_cast<float>(gHeight), 0.1f, 100.0f);
     const glm::mat4 view = gCamera.viewMatrix();
@@ -51,23 +107,14 @@ static void render() {
     gObjectShader->use();
     gObjectShader->setValue("projection", projection);
     gObjectShader->setValue("view", view);
-    gObjectShader->setValue("lightColor", glm::vec3(1.0f));
-    gObjectShader->setValue("lightPos", lightPos);
     gObjectShader->setValue("viewPos", gCamera.position());
+    gObjectShader->setValue("lightPos", gLightPos);
+    gObjectShader->setValue("lightSpaceMatrix", lightSpaceMatrix);
 
-    auto boardModel = glm::mat4(1.0f);
-    boardModel = glm::translate(boardModel, glm::vec3(0.0f, -1.0f, 0.0f));
-    gObjectShader->use();
-    gObjectShader->setValue("model", boardModel);
-    gObjectShader->setValue("objectColor", glm::vec3(0.25f, 0.25f, 0.25f));
-    gBoardModel->draw(gObjectShader, glm::vec4(0.5f));
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, gDepthMap);
 
-    auto chipModel = glm::mat4(1.0f);
-    chipModel = glm::translate(chipModel, glm::vec3(0.0f, 1.0f, 0.0f));
-    gObjectShader->use();
-    gObjectShader->setValue("model", chipModel);
-    gObjectShader->setValue("objectColor", glm::vec3(1.0f, 0.5f, 0.31f));
-    gChipModel->draw(gObjectShader, glm::vec4(0.5f));
+    renderScene(gObjectShader);
 }
 
 static void clean() {
@@ -76,6 +123,10 @@ static void clean() {
 
     delete gBoardModel;
     delete gChipModel;
+
+    glDeleteTextures(1, &gDepthMap);
+
+    glDeleteFramebuffers(1, &gDepthMapFbo);
 }
 
 static void renderLoop(SDL_Window* window) {
