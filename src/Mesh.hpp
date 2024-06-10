@@ -43,9 +43,8 @@ private:
 public:
     std::vector<Vertex> mVertices;
     std::vector<unsigned> mIndices;
-    std::vector<Texture> mTextures;
 public:
-    Mesh(std::vector<Vertex>&& vertices, std::vector<unsigned>&& indices, std::vector<Texture>&& textures);
+    Mesh(std::vector<Vertex>&& vertices, std::vector<unsigned>&& indices);
     Mesh(const Mesh&) = delete;
     Mesh(Mesh&&) = delete;
 

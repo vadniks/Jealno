@@ -21,15 +21,13 @@
 
 Mesh::Mesh(
     std::vector<Vertex>&& vertices,
-    std::vector<unsigned>&& indices,
-    std::vector<Texture>&& textures
+    std::vector<unsigned>&& indices
 ) :
     mVao(0),
     mVbo(0),
     mEbo(0),
     mVertices(std::move(vertices)),
-    mIndices(std::move(indices)),
-    mTextures(std::move(textures))
+    mIndices(std::move(indices))
 {
     glGenVertexArrays(1, &mVao);
     glGenBuffers(1, &mVbo);
@@ -56,17 +54,12 @@ Mesh::Mesh(
 }
 
 Mesh::~Mesh() {
-    for (const auto& i : mTextures)
-        glDeleteTextures(1, &(i.id));
-
     glDeleteVertexArrays(1, &mVao);
     glDeleteBuffers(1, &mVbo);
     glDeleteBuffers(1, &mEbo);
 }
 
 void Mesh::draw(CompoundShader* shader, const glm::vec4& color) {
-    assert((int) mTextures.size() == 0);
-
     shader->use();
     shader->setValue("objectColor", color);
 

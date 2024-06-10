@@ -44,7 +44,7 @@ public:
     const std::vector<Mesh*>& meshes();
 private:
     void processNode(aiNode* node, const aiScene* scene);
-    Mesh* processMesh(aiMesh* mesh, const aiScene* scene);
+    Mesh* processMesh(aiMesh* mesh);
     std::vector<Texture> loadMaterialTextures(const aiMaterial* mat, aiTextureType type, const std::string& typeName);
     unsigned textureFromFile(const std::string& path, const std::string& directory);
 };

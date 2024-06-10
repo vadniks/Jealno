@@ -49,16 +49,15 @@ const std::vector<Mesh*>& Model::meshes() {
 
 void Model::processNode(aiNode* node, const aiScene* scene) {
     for (int i = 0; i < (int) node->mNumMeshes; i++)
-        mMeshes.push_back(processMesh(scene->mMeshes[node->mMeshes[i]], scene));
+        mMeshes.push_back(processMesh(scene->mMeshes[node->mMeshes[i]]));
 
     for (int i = 0; i < (int) node->mNumChildren; i++)
         processNode(node->mChildren[i], scene);
 }
 
-Mesh* Model::processMesh(aiMesh* mesh, const aiScene* scene) {
+Mesh* Model::processMesh(aiMesh* mesh) {
     std::vector<Vertex> vertices;
     std::vector<unsigned> indices;
-    std::vector<Texture> textures;
 
     for (int i = 0; i < (int) mesh->mNumVertices; i++)
         vertices.push_back(Vertex{
@@ -75,17 +74,7 @@ Mesh* Model::processMesh(aiMesh* mesh, const aiScene* scene) {
             indices.push_back(face.mIndices[j]);
     }
 
-    if (mesh->mMaterialIndex >= 0) {
-        const aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-
-        const std::vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, Texture::TYPE_DIFFUSE);
-        textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
-
-        const std::vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, Texture::TYPE_SPECULAR);
-        textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
-    }
-
-    return new Mesh(std::move(vertices), std::move(indices), std::move(textures));
+    return new Mesh(std::move(vertices), std::move(indices));
 }
 
 std::vector<Texture> Model::loadMaterialTextures(const aiMaterial* mat, aiTextureType type, const std::string& typeName) {

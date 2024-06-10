@@ -32,38 +32,13 @@
 static int gWidth = 0, gHeight = 0;
 static Camera gCamera(glm::vec3(0.0f, 0.0f, 7.5f));
 static CompoundShader* gObjectShader = nullptr, * gLightShader = nullptr;
-static Model* gTileModel = nullptr, * gChipModel = nullptr, * gCubeModel = nullptr;
-
-static unsigned loadTexture(std::string&& path, bool clampToEdge) {
-    if (!path.ends_with(".png") && !path.ends_with(".jpg"))
-        assert(false);
-
-    unsigned id;
-    glGenTextures(1, &id);
-
-    SDL_Surface* xSurface = IMG_Load(path.c_str());
-    assert(xSurface != nullptr);
-    SDL_Surface* surface = SDL_ConvertSurfaceFormat(xSurface, SDL_PIXELFORMAT_RGBA32, 0);
-    SDL_FreeSurface(xSurface);
-
-    glBindTexture(GL_TEXTURE_2D, id);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, surface->w, surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, surface->pixels);
-    glGenerateMipmap(GL_TEXTURE_2D);
-    SDL_FreeSurface(surface);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, clampToEdge ? GL_CLAMP_TO_EDGE : GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, clampToEdge ? GL_CLAMP_TO_EDGE : GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    return id;
-}
+static Model* gBoardModel = nullptr, * gChipModel = nullptr, * gCubeModel = nullptr;
 
 static void init() {
     gObjectShader = new CompoundShader("shaders/objectVertex.glsl", "shaders/objectFragment.glsl");
     gLightShader = new CompoundShader("shaders/lightVertex.glsl", "shaders/lightFragment.glsl");
 
-    gTileModel = new Model("models/tile/tile.obj");
+    gBoardModel = new Model("models/board/board.obj");
     gChipModel = new Model("models/chip/chip.obj");
     gCubeModel = new Model("models/cube/cube.obj");
 }
@@ -85,12 +60,12 @@ static void render() {
     gLightShader->setValue("projection", projection);
     gLightShader->setValue("view", view);
 
-    auto tileModel = glm::mat4(1.0f);
-    tileModel = glm::translate(tileModel, glm::vec3(0.0f, 1.0f, 0.0f));
+    auto boardModel = glm::mat4(1.0f);
+    boardModel = glm::translate(boardModel, glm::vec3(0.0f, 1.0f, 0.0f));
     gObjectShader->use();
-    gObjectShader->setValue("model", tileModel);
+    gObjectShader->setValue("model", boardModel);
     gObjectShader->setValue("objectColor", glm::vec3(1.0f, 0.5f, 0.31f));
-    gTileModel->draw(gObjectShader, glm::vec4(0.5f));
+    gBoardModel->draw(gObjectShader, glm::vec4(0.5f));
 
     auto chipModel = glm::mat4(1.0f);
     chipModel = glm::translate(chipModel, glm::vec3(0.0f, -1.0f, 0.0f));
@@ -111,7 +86,7 @@ static void clean() {
     delete gObjectShader;
     delete gLightShader;
 
-    delete gTileModel;
+    delete gBoardModel;
     delete gChipModel;
     delete gCubeModel;
 }
