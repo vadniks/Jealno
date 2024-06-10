@@ -31,16 +31,15 @@
 
 static int gWidth = 0, gHeight = 0;
 static Camera gCamera(glm::vec3(0.0f, 0.0f, 7.5f));
-static CompoundShader* gObjectShader = nullptr, * gLightShader = nullptr;
-static Model* gBoardModel = nullptr, * gChipModel = nullptr, * gCubeModel = nullptr;
+static CompoundShader* gObjectShader = nullptr, * gDepthShader = nullptr;
+static Model* gBoardModel = nullptr, * gChipModel = nullptr;
 
 static void init() {
     gObjectShader = new CompoundShader("shaders/objectVertex.glsl", "shaders/objectFragment.glsl");
-    gLightShader = new CompoundShader("shaders/lightVertex.glsl", "shaders/lightFragment.glsl");
+    gDepthShader = new CompoundShader("shaders/depthVertex.glsl", "shaders/depthFragment.glsl");
 
     gBoardModel = new Model("models/board/board.obj");
     gChipModel = new Model("models/chip/chip.obj");
-    gCubeModel = new Model("models/cube/cube.obj");
 }
 
 static void render() {
@@ -56,10 +55,6 @@ static void render() {
     gObjectShader->setValue("lightPos", lightPos);
     gObjectShader->setValue("viewPos", gCamera.position());
 
-    gLightShader->use();
-    gLightShader->setValue("projection", projection);
-    gLightShader->setValue("view", view);
-
     auto boardModel = glm::mat4(1.0f);
     boardModel = glm::translate(boardModel, glm::vec3(0.0f, -1.0f, 0.0f));
     gObjectShader->use();
@@ -73,22 +68,14 @@ static void render() {
     gObjectShader->setValue("model", chipModel);
     gObjectShader->setValue("objectColor", glm::vec3(1.0f, 0.5f, 0.31f));
     gChipModel->draw(gObjectShader, glm::vec4(0.5f));
-
-    auto lightModel = glm::mat4(1.0f);
-    lightModel = glm::translate(lightModel, lightPos);
-    lightModel = glm::scale(lightModel, glm::vec3(0.125f));
-    gLightShader->use();
-    gLightShader->setValue("model", lightModel);
-    gCubeModel->draw(gLightShader, glm::vec4(1.0f));
 }
 
 static void clean() {
     delete gObjectShader;
-    delete gLightShader;
+    delete gDepthShader;
 
     delete gBoardModel;
     delete gChipModel;
-    delete gCubeModel;
 }
 
 static void renderLoop(SDL_Window* window) {
