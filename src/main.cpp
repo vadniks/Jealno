@@ -73,8 +73,7 @@ static void renderScene(CompoundShader* shader) {
     for (int i = 0; i < FIELD_SIZE; i++) {
         for (int j = 0; j < FIELD_SIZE; j++) {
             auto tileModel = glm::mat4(1.0f);
-            tileModel = glm::translate(tileModel, glm::vec3(0.0f, 0.0f, 0.0f));
-            tileModel = glm::translate(tileModel, glm::vec3(static_cast<float>(i) * 2.5f / 10.0f, -1.0f, static_cast<float>(j) * 2.5f / 10.0f));
+            tileModel = glm::translate(tileModel, glm::vec3(static_cast<float>(i) * 2.5f / 10.0f, 0.0f, static_cast<float>(j) * 2.5f / 10.0f));
             tileModel = glm::scale(tileModel, glm::vec3(0.125f));
 
             shader->use();
@@ -85,10 +84,11 @@ static void renderScene(CompoundShader* shader) {
     }
 
     auto chipModel = glm::mat4(1.0f);
-    chipModel = glm::translate(chipModel, glm::vec3(0.0f, 1.0f, 0.0f));
+    chipModel = glm::translate(chipModel, glm::vec3(0.0f, 0.06f, -0.01f));
+    chipModel = glm::scale(chipModel, glm::vec3(0.45f));
     shader->use();
     shader->setValue("model", chipModel);
-    shader->setValue("objectColor", glm::vec3(1.0f, 0.5f, 0.31f));
+    shader->setValue("objectColor", glm::vec3(0.5f, 0.1f, 0.1f));
     gChipModel->draw(shader, glm::vec4(0.5f));
 }
 
