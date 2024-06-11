@@ -87,15 +87,15 @@ static void init() {
     for (int i = 0, k = 0; i < FIELD_SIZE; i++) {
         for (int j = 0; j < 3; j++) {
             if (k % 2 == 0)
-                gChips[j][i] = (i + j) % 2 == 0 ? Chip::WHITE : Chip::BLACK;
+                gChips[j][i] = Chip::WHITE;
             k++;
         }
     }
 
     for (int i = 0, k = 0; i < FIELD_SIZE; i++) {
         for (int j = 5; j < FIELD_SIZE; j++) {
-            if (k % 2 == 0)
-                gChips[j][i] = (i + j) % 2 == 0 ? Chip::WHITE : Chip::BLACK;
+            if ((k + 1) % 2 == 0)
+                gChips[j][i] = Chip::BLACK;
             k++;
         }
     }
