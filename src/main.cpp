@@ -16,9 +16,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#pragma clang diagnostic ignored "-Wunknown-pragmas"
-#pragma ide diagnostic ignored "NullDereference"
-
 #include "Camera.hpp"
 #include "CompoundShader.hpp"
 #include "Model.hpp"
@@ -42,8 +39,8 @@ static const int SHADOW_SIZE = 4096, FIELD_SIZE = 8;
 
 static int gWidth = 0, gHeight = 0;
 static Camera gCamera(glm::vec3(0.9f, 2.1f, 2.9f), glm::vec3(0.0f, 1.0f, 0.0f), -89.7f, -47.3f);
-static CompoundShader* gObjectShader = nullptr, * gDepthShader = nullptr, * gLightShader = nullptr, * gOutlineShader = nullptr;
-static Model* gTileModel = nullptr, * gChipModel = nullptr, * gCubeModel = nullptr;
+static CompoundShader* gObjectShader, * gDepthShader, * gLightShader, * gOutlineShader;
+static Model* gTileModel, * gChipModel, * gCubeModel;
 static unsigned gDepthMapFbo, gDepthMap;
 static glm::vec3 gLightPos(-2.0f, 4.0f, -1.0f);
 
