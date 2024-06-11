@@ -245,7 +245,6 @@ static void clean() {
 static void renderLoop(SDL_Window* window) {
     int width, height;
     SDL_Event event;
-    bool mousePressed = false;
 
     init();
 
@@ -258,41 +257,24 @@ static void renderLoop(SDL_Window* window) {
                 case SDL_QUIT:
                     goto end;
                 case SDL_KEYDOWN:
-                    Camera::Direction direction;
                     switch (event.key.keysym.sym) {
-                        case SDLK_w:
-                            direction = Camera::Direction::FORWARD;
+                        case SDLK_q:
+                            if (gObjectToOutline.i > 0 && gObjectToOutline.j > 0)
+                                gObjectToOutline = {gObjectToOutline.i - 1, gObjectToOutline.j - 1};
                             break;
-                        case SDLK_a:
-                            direction = Camera::Direction::LEFT;
-                            break;
-                        case SDLK_s:
-                            direction = Camera::Direction::BACKWARD;
-                            break;
-                        case SDLK_d:
-                            direction = Camera::Direction::RIGHT;
-                            break;
-                        case SDLK_SPACE:
-                            direction = Camera::Direction::UP;
+                        case SDLK_e:
+                            if (gObjectToOutline.i < FIELD_SIZE - 1 && gObjectToOutline.j > 0)
+                                gObjectToOutline = {gObjectToOutline.i + 1, gObjectToOutline.j - 1};
                             break;
                         case SDLK_c:
-                            direction = Camera::Direction::DOWN;
+                            if (gObjectToOutline.i < FIELD_SIZE - 1&& gObjectToOutline.j < FIELD_SIZE - 1)
+                                gObjectToOutline = {gObjectToOutline.i + 1, gObjectToOutline.j + 1};
+                            break;
+                        case SDLK_z:
+                            if (gObjectToOutline.i > 0 && gObjectToOutline.j < FIELD_SIZE - 1)
+                                gObjectToOutline = {gObjectToOutline.i - 1, gObjectToOutline.j + 1};
                             break;
                     }
-                    gCamera.processKeyboard(direction);
-                    break;
-                case SDL_MOUSEBUTTONDOWN:
-                    mousePressed = true;
-                    break;
-                case SDL_MOUSEBUTTONUP:
-                    mousePressed = false;
-                    break;
-                case SDL_MOUSEMOTION:
-                    if (mousePressed)
-                        gCamera.processMouseMovement(static_cast<float>(event.motion.xrel), static_cast<float>(event.motion.yrel));
-                    break;
-                case SDL_MOUSEWHEEL:
-                    gCamera.processMouseScroll(static_cast<float>(event.wheel.y));
                     break;
             }
         }
