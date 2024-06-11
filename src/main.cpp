@@ -49,6 +49,7 @@ static unsigned gDepthMapFbo, gDepthMap;
 static glm::vec3 gLightPos(-2.0f, 4.0f, -1.0f);
 static Chip gChips[FIELD_SIZE][FIELD_SIZE];
 static CoordinatePair gObjectToOutline = {1, 1};
+static bool gSelecting = true;
 
 static void init() {
     gObjectShader = new CompoundShader("shaders/objectVertex.glsl", "shaders/objectFragment.glsl");
@@ -160,7 +161,7 @@ static void renderScene(CompoundShader* shader, bool first) {
                 gOutlineShader->use();
                 gOutlineShader->setValue("model", chipModel);
 
-                if (chip != Chip::NONE && i == gObjectToOutline.i && j == gObjectToOutline.j)
+                if (i == gObjectToOutline.i && j == gObjectToOutline.j)
                     gChipModel->draw(gOutlineShader, glm::vec4(0.5f));
             }
         }
@@ -271,6 +272,9 @@ static void renderLoop(SDL_Window* window) {
                         case SDLK_z:
                             if (gObjectToOutline.i > 0 && gObjectToOutline.j < FIELD_SIZE - 1)
                                 gObjectToOutline = {gObjectToOutline.i - 1, gObjectToOutline.j + 1};
+                            break;
+                        case SDLK_RETURN:
+                            gSelecting = !gSelecting;
                             break;
                     }
                     break;
