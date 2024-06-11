@@ -20,7 +20,6 @@
 #include <cassert>
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
-#include <SDL2/SDL_image.h>
 
 Model::Model(const std::string& path) {
     Assimp::Importer importer;
@@ -68,29 +67,4 @@ Mesh* Model::processMesh(aiMesh* mesh) {
     }
 
     return new Mesh(std::move(vertices), std::move(indices));
-}
-
-unsigned Model::textureFromFile(const std::string& path, const std::string& directory) {
-    std::string filename = directory + '/' + path;
-
-    SDL_Surface* xSurface = IMG_Load(filename.c_str());
-    assert(xSurface != nullptr);
-
-    SDL_Surface* surface = SDL_ConvertSurfaceFormat(xSurface, SDL_PIXELFORMAT_RGBA32, 0);
-    SDL_FreeSurface(xSurface);
-
-    unsigned texture;
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, surface->w, surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, surface->pixels);
-    glGenerateMipmap(GL_TEXTURE_2D);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    SDL_FreeSurface(surface);
-
-    return texture;
 }

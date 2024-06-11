@@ -30,7 +30,7 @@ private:
     std::string mDirectory;
     std::vector<Texture> mLoadedTextures;
 public:
-    Model(const std::string& path);
+    explicit Model(const std::string& path);
     Model(const Model&) = delete;
     Model(Model&&) = delete;
 
@@ -43,5 +43,4 @@ public:
 private:
     void processNode(aiNode* node, const aiScene* scene);
     Mesh* processMesh(aiMesh* mesh);
-    unsigned textureFromFile(const std::string& path, const std::string& directory);
 };

@@ -19,8 +19,8 @@ up-left, up-right, down-left, down-right respectively.
 
 ## Build
 
-This project requires the libraries `SDL2`, `SDL2_ttf`, `SDL2_image`, `GL`, `GLEW`, `Assimp` 
-to be installed on your system before building. Only Linux x86_64 targets are supported.
+This project requires the libraries `SDL2`, `GL`, `GLEW`, `Assimp` to be installed on your 
+system before building. Only Linux x86_64 targets are supported.
 
 ```shell
 mkdir build

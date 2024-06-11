@@ -20,10 +20,7 @@
 #include "CompoundShader.hpp"
 #include "Model.hpp"
 #include <cassert>
-#include <string>
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
-#include <SDL2/SDL_ttf.h>
 #include <GL/glew.h>
 #include <glm/glm.hpp>
 #include <glm/ext/matrix_clip_space.hpp>
@@ -274,7 +271,7 @@ static void renderLoop(SDL_Window* window) {
                             move(gObjectToOutline.i < FIELD_SIZE - 1 && gObjectToOutline.j > 0, gObjectToOutline.i + 1, gObjectToOutline.j - 1);
                             break;
                         case SDLK_c:
-                            move(gObjectToOutline.i < FIELD_SIZE - 1&& gObjectToOutline.j < FIELD_SIZE - 1, gObjectToOutline.i + 1, gObjectToOutline.j + 1);
+                            move(gObjectToOutline.i < FIELD_SIZE - 1 && gObjectToOutline.j < FIELD_SIZE - 1, gObjectToOutline.i + 1, gObjectToOutline.j + 1);
                             break;
                         case SDLK_z:
                             move(gObjectToOutline.i > 0 && gObjectToOutline.j < FIELD_SIZE - 1, gObjectToOutline.i - 1, gObjectToOutline.j + 1);
@@ -304,8 +301,6 @@ static void renderLoop(SDL_Window* window) {
 
 int main() {
     assert(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_TIMER) == 0);
-    assert(IMG_Init(IMG_INIT_JPG | IMG_INIT_PNG) > 0);
-    assert(TTF_Init() == 0);
 
     SDL_version version;
     SDL_GetVersion(&version);
@@ -350,8 +345,6 @@ int main() {
     SDL_GL_DeleteContext(glContext);
     SDL_DestroyWindow(window);
 
-    TTF_Quit();
-    IMG_Quit();
     SDL_Quit();
 
     assert(SDL_GetNumAllocations() == 0);
