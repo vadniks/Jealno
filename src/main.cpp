@@ -151,8 +151,6 @@ static void renderScene(CompoundShader* shader, bool first) {
     if (!first) {
         for (int i = 0; i < FIELD_SIZE; i++) {
             for (int j = 0; j < FIELD_SIZE; j++) {
-                const Chip chip = gChips[j][i];
-
                 auto chipModel = glm::mat4(1.0f);
                 chipModel = glm::translate(chipModel, glm::vec3(0.0f, 0.06f, -0.01f));
                 chipModel = glm::translate(chipModel, glm::vec3(static_cast<float>(i) * 2.5f / 10.0f, 0.0f, static_cast<float>(j) * 2.5f / 10.0f));
