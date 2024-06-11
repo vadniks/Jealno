@@ -42,7 +42,7 @@ static const int SHADOW_SIZE = 4096, FIELD_SIZE = 8;
 
 static int gWidth = 0, gHeight = 0;
 static Camera gCamera(glm::vec3(0.9f, 2.1f, 2.9f), glm::vec3(0.0f, 1.0f, 0.0f), -89.7f, -47.3f);
-static CompoundShader* gObjectShader = nullptr, * gDepthShader = nullptr, * gLightShader = nullptr;
+static CompoundShader* gObjectShader = nullptr, * gDepthShader = nullptr, * gLightShader = nullptr, * gOutlineShader = nullptr;
 static Model* gTileModel = nullptr, * gChipModel = nullptr, * gCubeModel = nullptr;
 static unsigned gDepthMapFbo, gDepthMap;
 static glm::vec3 gLightPos(-2.0f, 4.0f, -1.0f);
@@ -55,8 +55,8 @@ static void init() {
     gObjectShader->setValue("shadowMap", 0);
 
     gDepthShader = new CompoundShader("shaders/depthVertex.glsl", "shaders/depthFragment.glsl");
-
     gLightShader = new CompoundShader("shaders/lightVertex.glsl", "shaders/lightFragment.glsl");
+    gOutlineShader = new CompoundShader("shaders/outlineVertex.glsl", "shaders/outlineFragment.glsl");
 
     gTileModel = new Model("models/tile/tile.obj");
     gChipModel = new Model("models/chip/chip.obj");
@@ -101,7 +101,9 @@ static void init() {
     }
 }
 
-static void renderScene(CompoundShader* shader) {
+static void renderScene(CompoundShader* shader, bool first) {
+    glStencilMask(0x00);
+
     for (int i = 0; i < FIELD_SIZE; i++) {
         for (int j = 0; j < FIELD_SIZE; j++) {
             auto tileModel = glm::mat4(1.0f);
@@ -113,6 +115,11 @@ static void renderScene(CompoundShader* shader) {
             shader->setValue("objectColor", (i + j) % 2 == 0 ? glm::vec3(0.125f) : glm::vec3(1.0f));
             gTileModel->draw(shader, glm::vec4(0.5f));
         }
+    }
+
+    if (!first) {
+        glStencilMask(0xff);
+        glStencilFunc(GL_ALWAYS, 1, 0xFF);
     }
 
     for (int i = 0; i < FIELD_SIZE; i++) {
@@ -132,6 +139,37 @@ static void renderScene(CompoundShader* shader) {
                 gChipModel->draw(shader, glm::vec4(0.5f));
         }
     }
+
+    if (!first) {
+        glStencilFunc(GL_NOTEQUAL, 1, 0xff);
+        glStencilMask(0x00);
+        glDisable(GL_DEPTH_TEST);
+    }
+
+    if (!first) {
+        for (int i = 0; i < FIELD_SIZE; i++) {
+            for (int j = 0; j < FIELD_SIZE; j++) {
+                const Chip chip = gChips[j][i];
+
+                auto chipModel = glm::mat4(1.0f);
+                chipModel = glm::translate(chipModel, glm::vec3(0.0f, 0.06f, -0.01f));
+                chipModel = glm::translate(chipModel, glm::vec3(static_cast<float>(i) * 2.5f / 10.0f, 0.0f, static_cast<float>(j) * 2.5f / 10.0f));
+                chipModel = glm::scale(chipModel, glm::vec3(0.5f));
+
+                gOutlineShader->use();
+                gOutlineShader->setValue("model", chipModel);
+
+                if (chip != Chip::NONE)
+                    gChipModel->draw(gOutlineShader, glm::vec4(0.5f));
+            }
+        }
+    }
+
+    if (!first) {
+        glStencilMask(0xff);
+        glStencilFunc(GL_ALWAYS, 0, 0xff);
+        glEnable(GL_DEPTH_TEST);
+    }
 }
 
 static void render() {
@@ -147,11 +185,11 @@ static void render() {
     glBindFramebuffer(GL_FRAMEBUFFER, gDepthMapFbo);
     glClear(GL_DEPTH_BUFFER_BIT);
 
-    renderScene(gDepthShader);
+    renderScene(gDepthShader, true);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     glViewport(0, 0, gWidth, gHeight);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
     const glm::mat4 projection = glm::perspective(glm::radians(gCamera.zoom()), static_cast<float>(gWidth) / static_cast<float>(gHeight), 0.1f, 100.0f);
     const glm::mat4 view = gCamera.viewMatrix();
@@ -166,7 +204,11 @@ static void render() {
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, gDepthMap);
 
-    renderScene(gObjectShader);
+    gOutlineShader->use();
+    gOutlineShader->setValue("projection", projection);
+    gOutlineShader->setValue("view", view);
+
+    renderScene(gObjectShader, false);
 
     auto lightModelMatrix = glm::mat4(1.0f);
     lightModelMatrix = glm::translate(lightModelMatrix, gLightPos);
@@ -188,6 +230,7 @@ static void clean() {
     delete gObjectShader;
     delete gDepthShader;
     delete gLightShader;
+    delete gOutlineShader;
 
     delete gTileModel;
     delete gChipModel;
@@ -254,7 +297,7 @@ static void renderLoop(SDL_Window* window) {
         }
 
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
         render();
 
@@ -279,6 +322,7 @@ int main() {
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
     SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4);
+    SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
     SDL_Window* window = SDL_CreateWindow(
         "Jealno",
@@ -298,8 +342,12 @@ int main() {
     glEnable(GL_MULTISAMPLE);
     glEnable(GL_BLEND);
     glEnable(GL_CULL_FACE);
+    glEnable(GL_STENCIL_TEST);
 
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+    glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 
     SDL_GL_SetSwapInterval(1);
 
