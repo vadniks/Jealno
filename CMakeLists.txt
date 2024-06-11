@@ -8,7 +8,7 @@ add_compile_options("-Wall")
 add_compile_options("-Wextra")
 add_compile_options("-Wpedantic")
 add_compile_options("-O3")
-#add_link_options("-s")
+add_link_options("-s")
 
 add_compile_options("-Wno-c99-extensions")
 add_compile_options("-Wno-vla-extension")
