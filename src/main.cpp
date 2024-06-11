@@ -207,6 +207,7 @@ static void render() {
     gOutlineShader->use();
     gOutlineShader->setValue("projection", projection);
     gOutlineShader->setValue("view", view);
+    gOutlineShader->setValue("color", gSelecting ? glm::vec3(1.0f) : glm::vec3(1.0f, 0.1f, 0.1f));
 
     renderScene(gObjectShader, false);
 
@@ -239,6 +240,17 @@ static void clean() {
     glDeleteFramebuffers(1, &gDepthMapFbo);
 }
 
+static void move(bool check, int i, int j) {
+    if (check) {
+        if (gSelecting)
+            gObjectToOutline = {i, j};
+        else if (gChips[gObjectToOutline.j][gObjectToOutline.i] != Chip::NONE) {
+            gChips[j][i] = gChips[gObjectToOutline.j][gObjectToOutline.i];
+            gChips[gObjectToOutline.j][gObjectToOutline.i] = Chip::NONE;
+        }
+    }
+}
+
 static void renderLoop(SDL_Window* window) {
     int width, height;
     SDL_Event event;
@@ -256,23 +268,22 @@ static void renderLoop(SDL_Window* window) {
                 case SDL_KEYDOWN:
                     switch (event.key.keysym.sym) {
                         case SDLK_q:
-                            if (gObjectToOutline.i > 0 && gObjectToOutline.j > 0)
-                                gObjectToOutline = {gObjectToOutline.i - 1, gObjectToOutline.j - 1};
+                            move(gObjectToOutline.i > 0 && gObjectToOutline.j > 0, gObjectToOutline.i - 1, gObjectToOutline.j - 1);
                             break;
                         case SDLK_e:
-                            if (gObjectToOutline.i < FIELD_SIZE - 1 && gObjectToOutline.j > 0)
-                                gObjectToOutline = {gObjectToOutline.i + 1, gObjectToOutline.j - 1};
+                            move(gObjectToOutline.i < FIELD_SIZE - 1 && gObjectToOutline.j > 0, gObjectToOutline.i + 1, gObjectToOutline.j - 1);
                             break;
                         case SDLK_c:
-                            if (gObjectToOutline.i < FIELD_SIZE - 1&& gObjectToOutline.j < FIELD_SIZE - 1)
-                                gObjectToOutline = {gObjectToOutline.i + 1, gObjectToOutline.j + 1};
+                            move(gObjectToOutline.i < FIELD_SIZE - 1&& gObjectToOutline.j < FIELD_SIZE - 1, gObjectToOutline.i + 1, gObjectToOutline.j + 1);
                             break;
                         case SDLK_z:
-                            if (gObjectToOutline.i > 0 && gObjectToOutline.j < FIELD_SIZE - 1)
-                                gObjectToOutline = {gObjectToOutline.i - 1, gObjectToOutline.j + 1};
+                            move(gObjectToOutline.i > 0 && gObjectToOutline.j < FIELD_SIZE - 1, gObjectToOutline.i - 1, gObjectToOutline.j + 1);
                             break;
                         case SDLK_RETURN:
-                            gSelecting = !gSelecting;
+                            if (gSelecting && gChips[gObjectToOutline.j][gObjectToOutline.i] != Chip::NONE)
+                                gSelecting = false;
+                            else
+                                gSelecting = true;
                             break;
                     }
                     break;
