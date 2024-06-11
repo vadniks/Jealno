@@ -35,6 +35,10 @@ enum Chip {
     BLACK = 2
 };
 
+struct CoordinatePair {
+    int i, j;
+};
+
 static const int SHADOW_SIZE = 4096, FIELD_SIZE = 8;
 
 static int gWidth = 0, gHeight = 0;
@@ -43,8 +47,8 @@ static CompoundShader* gObjectShader, * gDepthShader, * gLightShader, * gOutline
 static Model* gTileModel, * gChipModel, * gCubeModel;
 static unsigned gDepthMapFbo, gDepthMap;
 static glm::vec3 gLightPos(-2.0f, 4.0f, -1.0f);
-
 static Chip gChips[FIELD_SIZE][FIELD_SIZE];
+static CoordinatePair gObjectToOutline = {1, 1};
 
 static void init() {
     gObjectShader = new CompoundShader("shaders/objectVertex.glsl", "shaders/objectFragment.glsl");
@@ -156,7 +160,7 @@ static void renderScene(CompoundShader* shader, bool first) {
                 gOutlineShader->use();
                 gOutlineShader->setValue("model", chipModel);
 
-                if (chip != Chip::NONE)
+                if (chip != Chip::NONE && i == gObjectToOutline.i && j == gObjectToOutline.j)
                     gChipModel->draw(gOutlineShader, glm::vec4(0.5f));
             }
         }
