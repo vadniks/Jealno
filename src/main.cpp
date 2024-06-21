@@ -335,7 +335,7 @@ int main() {
 
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+    glStencilFunc(GL_NOTEQUAL, 1, 0xff);
     glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 
     SDL_GL_SetSwapInterval(1);
